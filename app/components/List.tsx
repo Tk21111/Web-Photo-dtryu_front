@@ -28,8 +28,8 @@ export default function List({ proj }: { proj: Proj }) {
     }
 
     try {
-      const res = await fetch(`${api}/req/req`, {
-        method: "PATCH",
+      const res = await fetch("http://localhost:3101/req/req", {
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
@@ -71,7 +71,7 @@ export default function List({ proj }: { proj: Proj }) {
       {isOpen && (
         <div className="p-2 transition-all duration-300 ease-in-out">
           <p className="text-sm">Location on Drive: {proj.locationOnDrive}</p>
-          <p className="text-sm">Size: {proj.size} MB</p>
+          <p className="text-sm">Size: {proj.size} Byte</p>
           <p className="text-sm">Id: {proj._id}</p>
         </div>
       )}
