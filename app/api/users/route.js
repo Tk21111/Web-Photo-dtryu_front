@@ -5,7 +5,7 @@ import Drive from "../../model/Drive";
 export async function GET() {
 
     await connectToDatabase();
-    const projs = await Drive.find();
+    const projs = await Drive.find({public : true});
         
     return Response.json(projs)
     

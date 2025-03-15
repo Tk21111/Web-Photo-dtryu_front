@@ -21,21 +21,18 @@ type Proj = {
       if (!res.ok) {
         throw new Error(`Failed to fetch data: ${res.status}`);
       }
-  
+      
       // Check if the response body is empty
       const projs : Proj[]= await res.json(); // Read as text first
-      console.log(projs)
+    
 
   
   
       return (
         <div className="py-10">
-            <form className="mb-4">
-                <input type="text" name="projName" required className="border p-2 mr-2"/>
-                <button type="submit" className="btn-accent bg-blue-600 p-2 rounded-lg">add proj</button>
-            </form>
-          <h2>All Projects</h2>
-          <ul className="list bg-base-100 rounded-box shadow-md">
+           
+          <h2 className="justify-center text-3xl font-bold my-2">All Projects</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-base-100 rounded-box shadow-md py-20">
             {projs.length > 0 ? (
                 projs.map((proj) => (
                   <List key={proj._id} proj={proj}/>
@@ -43,7 +40,7 @@ type Proj = {
             ) : (
                 <p>No projects found.</p>
             )}
-          </ul>
+          </div>
           
         </div>
       );
