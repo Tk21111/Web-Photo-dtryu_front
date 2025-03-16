@@ -82,7 +82,7 @@ export default function List({ proj }: { proj: Proj }) {
           <div className="flex-row space-x-1">
             {["pre-upload", "resting"].includes(proj.status) && (
               <button
-                className="border-2 rounded-lg px-2 py-0.5 bg-blue-600"
+                className="border-2 rounded-lg px-2 py-0.5 bg-blue-600 w-2lg hover:bg-blue-800 transition-colors duration-500"
                 onClick={handleSubmit}
               >
                 Request
@@ -91,7 +91,7 @@ export default function List({ proj }: { proj: Proj }) {
             {
               accessToken && (
                 <button
-                className="border-2 rounded-lg px-2 py-0.5 bg-red-600"
+                className="border-2 rounded-lg px-2 py-0.5 bg-red-600 "
                 onClick={handleDelProjDrive}
               >
                 del
