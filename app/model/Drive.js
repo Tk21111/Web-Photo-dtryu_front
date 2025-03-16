@@ -1,4 +1,4 @@
-import mongoose from "mongoose"
+const mongoose = require('mongoose')
 
 const driveShema = new mongoose.Schema({
     
@@ -47,6 +47,14 @@ const driveShema = new mongoose.Schema({
     public : {
         type : Boolean,
         default : true
+    },
+    serviceAcc : {
+        type : Number,
+        default : 0
+    },
+    file : {
+        type : [String],
+        default : []
     }
     /*---- end ----*/
 },{
@@ -54,4 +62,4 @@ const driveShema = new mongoose.Schema({
 }
 )
 
-export default mongoose.models.drive || mongoose.model('drive' , driveShema)
+module.exports = mongoose.model('drive' , driveShema)

@@ -1,4 +1,4 @@
-import mongoose from "mongoose"
+const mongoose = require('mongoose')
 
 const UploadTicket = new mongoose.Schema({
     
@@ -9,7 +9,7 @@ const UploadTicket = new mongoose.Schema({
         
     },
     del : {
-        type : Array,
+        type : [{type : mongoose.Schema.Types.ObjectId , ref : 'drive'}],
         default : null
     } , 
     dateDue : {
@@ -18,11 +18,11 @@ const UploadTicket = new mongoose.Schema({
     },
     status : {
         type : String,
-        default : "awiat"
+        default : "awaitUpload"
     }
 
     /*---- end ----*/
 }
 )
 
-export default mongoose.models.UploadTicket || mongoose.model('UploadTicket' , UploadTicket)
+module.exports = mongoose.model('UploadTicket' , UploadTicket)

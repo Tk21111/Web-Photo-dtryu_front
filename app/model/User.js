@@ -1,4 +1,4 @@
-import mongoose from "mongoose"
+const mongoose = require('mongoose')
 
 const userSchema = new mongoose.Schema({
     username : {
@@ -21,10 +21,6 @@ const userSchema = new mongoose.Schema({
         type : Number,
         default : 16105472360
     },
-    uploadQueue : {
-        type : Array,
-        default : []
-    },
     autoQueue  :{
         type : String,
         default : "true"
@@ -32,4 +28,4 @@ const userSchema = new mongoose.Schema({
 
 })
 
-export default mongoose.models.User || mongoose.model('User' , userSchema)
+module.exports = mongoose.model('User' , userSchema)
