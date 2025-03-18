@@ -29,10 +29,10 @@ type Proj = {
   
   
       return (
-        <div className="py-10">
+        <div className="py-10 ">
            
           <h2 className="justify-center text-3xl font-bold my-2">All Projects</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-base-100 rounded-box shadow-md py-20">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 rounded-box shadow-md py-20 transition delay-150 duration-300 ease-in-out">
             {projs.length > 0 ? (
                 projs.map((proj) => (
                   <List key={proj._id} proj={proj}/>
