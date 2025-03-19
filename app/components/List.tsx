@@ -27,16 +27,11 @@ export default function List({ proj }: { proj: Proj }) {
 
     if (!proj._id || !["pre-upload", "resting"].includes(proj.status) || click) return;
 
-    const api = process.env.NEXT_PUBLIC_EXPRESS_API; // Use NEXT_PUBLIC_ for client-side env vars
-    if (!api) {
-      console.error("API URL is not defined in env variables.");
-      return;
-    }
 
     setClick(true)
     try {
-      const res = await fetch("http://localhost:3101/req/req", {
-        method: "POST",
+      const res = await fetch(`${process.env.NEXT_PUBLIC_HOST}/api/projpublic/req`, {
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
@@ -65,7 +60,7 @@ export default function List({ proj }: { proj: Proj }) {
 
     if(!proj._id) return null
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_EXPRESS_API}/drive/del` ,{
+      const res = await fetch(`${process.env.NEXT_PUBLIC_HOST}/api/proj/del` ,{
         method : "PATCH",
         body : JSON.stringify({projId : proj._id}),
         headers : {
@@ -96,7 +91,7 @@ export default function List({ proj }: { proj: Proj }) {
       ${isOpen && "h-full"}
       ${proj.status === "uploading" || click ? "bg-orange-300 text-orange-800 animate-pulse" : ""}
       ${proj.status === "onDrive" ? " text-white" : ""} 
-      ${proj.status === "delting" ? "bg-orange-200 blur-2xl shadow-lg" : ""} 
+      ${proj.status === "deleting" ? "bg-orange-200 blur-2xl shadow-lg" : ""} 
       ${reqFail ? "bg-red-200 shadow-lg animate-none" : ""} 
      hover:shadow-orange-200 hover:scale-105 opacity-85 hover:opacity-100 transform origin-center`}>
         <div className={`relative flex size-4`}>

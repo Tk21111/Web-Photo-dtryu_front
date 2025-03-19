@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 import { connectToDatabase } from "../../../lib/mongodb";
-import Drive from "../../../model/Drive";
+import Drive from "../../../model/Drive"
 import UploadTicket from "../../../model/UploadTicket"
 import serviceAccSelector from "../../../utils/serviceAccSelector";
 import User from "../../../model/User"
 import schedule from 'node-schedule';
 import checkAndDel from "../../../utils/checkAndDel";
+
+
 
 export async function PATCH(req) {
     await connectToDatabase();
@@ -28,54 +30,73 @@ export async function PATCH(req) {
 
 
         const driveUsageCheck = async () => {
+
             async function checkStorage() {
-                const serviceAccounts = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS || "[]");
-                for (const account of serviceAccounts) {
+                for (let i = 0; i < process.env.GOOGLE_APPLICATION_CREDENTIALS; i++) {
                     try {
-                        const drive = serviceAccSelector(account);
-                        const driveUsed = await drive.about.get({ fields: "storageQuota" });
-                        if (
-                            driveUsed &&
-                            (driveUsed.data.storageQuota.limit - userInfo.driveBuffer) -
-                            driveUsed.data.storageQuota.usage - projectReq.size > 0
-                        ) {
-                            return account;
-                        }
+                        const drive = serviceAccSelector(i);
+                        
+                        const driveUsed = await drive.about.get({ fields: 'storageQuota' });
+                        console.log(driveUsed && (driveUsed.data.storageQuota.limit - userInfo.driveBuffer) - driveUsed.data.storageQuota.usage - projectReq.size > 0);
+                        console.log(i)
+                        // Check if there is enough storage
+                        if (driveUsed && (driveUsed.data.storageQuota.limit - userInfo.driveBuffer) - driveUsed.data.storageQuota.usage - projectReq.size > 0) {
+                            return i;  // good use this
+                        } 
+            
                     } catch (err) {
-                        console.error("Error in driveUsageCheck:", err);
+                        console.log(err + " ; driveUsageCheck");
                     }
                 }
-                return null;
+            
+                return null;  // Default return if nothing matches
             }
-
             const haveServiceAccFree = await checkStorage();
-            if (haveServiceAccFree) return [haveServiceAccFree, null];
 
-            const projsArr = {};
-            for (const y of projects) {
-                if (!projsArr[y.serviceAcc]) projsArr[y.serviceAcc] = [];
-                projsArr[y.serviceAcc].push(y);
+            //find free acc
+            if(haveServiceAccFree !== null){
+                return [haveServiceAccFree, null]
             }
+            //quese auto func 
+            //if just newest uploadfirst , overrideable
 
-            let projsArrSorted = [];
-            for (const p in projsArr) {
-                const projByOldest = projsArr[p].sort((a, b) => Date.parse(a.timeReqFullfill) - Date.parse(b.timeReqFullfill));
-                projsArrSorted.push(projByOldest[0]);
+            //---------------------- find proj to del ---------------------------
+            //sort by oldest time
+            let projsArr = [];
+            for (let y of projects){
+
+                if(projsArr[y.serviceAcc]){
+                    projsArr[y.serviceAcc].push(y);
+                } else {
+                    projsArr[y.serviceAcc] = [y]
+                }
+                
             }
-
-            const oldestProjService = projsArrSorted.sort((a, b) => Date.parse(a.timeReqFullfill) - Date.parse(b.timeReqFullfill));
-            if (!oldestProjService.length) return [null, null];
-
-            let delProj = [], sum = 0;
+            let projsArrSorted = []
+            for (let p of projsArr){
+                const projByOldest =  p.sort((a, b) => Date.parse(b.timeReqFullfill) - Date.parse(a.timeReqFullfill));
+                projsArrSorted.push(projByOldest[0])
+            }
+            let oldestProjService = projsArrSorted.sort((a,b) => Date.parse(b.timeReqFullfill) - Date.parse(a.timeReqFullfill));
             const serviceAccUse = oldestProjService[0].serviceAcc;
+            
+            if(!oldestProjService){
+                return [null , null];
+            }
+
+            let delProj = [];
+            let sum = 0;
+
+            //find the oldest to del 
             for (const curr of projsArr[serviceAccUse]) {
                 delProj.push(curr._id);
                 sum += curr.size;
-                if (sum >= projectReq.size) break;
-            }
+                if (projectReq.size < curr.size + sum) break;
+            };
 
-            return [serviceAccUse, delProj];
-        };
+            return [serviceAccUse , delProj]
+        
+        }
 
         const [serviceAccUse, delProj] = await driveUsageCheck();
         if (!serviceAccUse) {

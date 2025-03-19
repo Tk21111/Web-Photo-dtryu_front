@@ -4,12 +4,7 @@ import Drive from "../../model/Drive";
 import User from "../../model/User";  // Make sure User is imported
 import { NextResponse } from "next/server";
 
-export async function GET() {
-    await connectToDatabase();
-    const projs = await Drive.find({ public: true });
 
-    return NextResponse.json(projs);
-}
 
 /*---------------------------------- USER SIDE ------------------------------------------*/
 //create proj
@@ -17,13 +12,15 @@ export async function POST(req) {
 
     await connectToDatabase();
     try {
-        const { name, locationOnDisk, size, originalTime, priority, serviceAcc } = await req.json();
+        const { name, locationOnDisk, size, originalTime, priority, serviceAcc , user} = await req.json();
+        
 
-        if (!req.user) return NextResponse.json({ status: 401, message: "Unauthorized" });
+        if (!user){ console.log("401"); return NextResponse.json({ status: 401, message: "Unauthorized" }); };
 
-        const userReq = await User.findOne({ username: req.user }).exec();
+        const userReq = await User.findOne({ username: user }).exec();
         if (!userReq) return NextResponse.json({ status: 403, message: "Forbidden" });
 
+        console.log("hello")
         const response = await Drive.create({
             user: userReq._id, // Save user ID instead of entire object
             name,
@@ -33,6 +30,7 @@ export async function POST(req) {
             priority,
             serviceAcc,
         });
+        console.log("hello")
 
         console.log(response._id);
         return NextResponse.json({ projId: response._id });

@@ -11,26 +11,21 @@ export async function PATCH(req) {
 
     await connectToDatabase();
     try {
-        const { projId, uploadTicketId, locationOnDrive } = await req.json();
+            const {projId} = await req.json();
+    
+             await UploadTicket.create({
+                upload : null,
+                del : [projId],
+                dateDue : Date.now(),
+                status : "awaitDelt"
+            });
+    
+            await checkAndDel();
+            return NextResponse.json({ status : 201});
 
-        if (!projId || !locationOnDrive || !uploadTicketId) {
-            return NextResponse.json({ status: 400, message: "Missing required fields" });
+            
+        } catch (err) {
+            console.log(err + " ; delProj")
+            return NextResponse.json(err)
         }
-
-        await UploadTicket.findByIdAndDelete(uploadTicketId);
-
-        const proj = await Drive.findByIdAndUpdate(projId, { 
-            status: "onDrive", 
-            locationOnDrive 
-        });
-
-        if (!proj) return NextResponse.json({ status: 404, message: "Project not found" });
-
-        await checkAndDel();
-
-        return NextResponse.json({ status: 200, message: "Delting" });
-    } catch (err) {
-        console.error(err, " ; finishUpload");
-        return NextResponse.json({ status: 500, error: err.message });
-    }
 }

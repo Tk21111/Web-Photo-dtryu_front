@@ -14,7 +14,7 @@ type Proj = {
   
   export default async function Projs() {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_HOST}/api/proj`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_HOST}/api/projpublic`, {
         cache: "no-store", // Disable caching
       });
   
