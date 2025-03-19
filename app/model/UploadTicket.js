@@ -1,5 +1,4 @@
-const mongoose = require('mongoose')
-
+import mongoose from "mongoose";
 const UploadTicket = new mongoose.Schema({
     
     upload : {

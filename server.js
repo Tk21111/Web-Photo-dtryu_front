@@ -1,6 +1,7 @@
 import { createServer } from "node:http";
 import next from "next";
 import { Server } from "socket.io";
+import Drive from "./app/model/Drive.js";
 
 const dev = process.env.NODE_ENV !== "production";
 const hostname = "localhost";
@@ -13,14 +14,17 @@ app.prepare().then(() => {
   const httpServer = createServer(handler);
 
   const io = new Server(httpServer);
-  let onlineUser = []
 
-  io.on("connection", (socket) => {
-    //add user
-    socket.on('addNewUser' , (user) => {
-      
-    })
+  // MongoDB Change Stream
+  const changeStream = Drive.watch();
+
+  changeStream.on("change", (change) => {
+    console.log("MongoDB Data Changed:", change);
+    io.emit("change", change); // Notify all clients
   });
+  io.on("connection", (socket)=>{
+      console.log("client connect" , socket.id)
+  })
 
   httpServer
     .once("error", (err) => {
