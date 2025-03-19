@@ -1,19 +1,20 @@
 import List from "../components/List";
 
 type Proj = {
-    _id: string;
-    name: string;
-    user: string;
-    status: string;
-    locationOnDisk: string;
-    locationOnDrive: string;
-    size: number;
-    timeReqFullfill: number;
-  };
+  _id: string;
+  name: string;
+  user: string;
+  status: string;
+  locationOnDisk: string;
+  locationOnDrive: string;
+  size: number;
+  timeReqFullfill: string;
+  originalTime :string;
+};
   
   export default async function Projs() {
     try {
-      const res = await fetch("http://localhost:3000/api/users", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_HOST}/api/proj`, {
         cache: "no-store", // Disable caching
       });
   

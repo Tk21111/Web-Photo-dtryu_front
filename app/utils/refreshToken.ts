@@ -11,7 +11,7 @@ export const refreshAccessToken = async () => {
 
     try {
         // Make API request to refresh token endpoint
-        const response = await fetch(`${process.env.NEXT_PUBLIC_EXPRESS_API}/refresh`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_HOST}/api/user`, {
             method: "PATCH",
             headers: {
                 "Content-Type": "application/json",

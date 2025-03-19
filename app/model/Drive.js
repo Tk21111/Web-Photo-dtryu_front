@@ -62,4 +62,5 @@ const driveShema = new mongoose.Schema({
 }
 )
 
-module.exports = mongoose.model('drive' , driveShema)
+const out = mongoose.models.drive || mongoose.model('drive' , driveShema)
+export default out;

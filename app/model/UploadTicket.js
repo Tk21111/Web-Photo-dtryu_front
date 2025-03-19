@@ -25,4 +25,5 @@ const UploadTicket = new mongoose.Schema({
 }
 )
 
-module.exports = mongoose.model('UploadTicket' , UploadTicket)
+const out =mongoose.models.UploadTicket || mongoose.model('UploadTicket' , UploadTicket)
+export default out
