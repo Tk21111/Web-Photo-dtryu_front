@@ -10,12 +10,15 @@ type Proj = {
   size: number;
   timeReqFullfill: string;
   originalTime :string;
+  serviceAcc : number;
 };
   
   export default async function Projs() {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_HOST}/api/projpublic`, {
-        cache: "no-store", // Disable caching
+        cache: "force-cache", // Disable caching
+        next : {tags : ["projs"] , revalidate : 10}
+        
       });
   
       // Check if the response is OK (status code 200)

@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import checkAndDel from "../../../utils/checkAndDel";
 import { connectToDatabase } from "../../../lib/mongodb";
 import { serviceAccSelector } from "../../../utils/serviceAccSelector";
+import { revalidatePath } from "next/cache";
 
 
 
@@ -21,6 +22,8 @@ export async function PATCH(req) {
             });
     
             await checkAndDel();
+
+            revalidatePath('/projs')
             return NextResponse.json({ status : 201});
 
             

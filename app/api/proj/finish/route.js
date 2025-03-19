@@ -3,6 +3,8 @@ import Drive from "../../../model/Drive";
 import UploadTicket from "../../../model/UploadTicket";
 import { NextResponse } from "next/server";
 
+import {revalidatePath, revalidateTag} from "next/cache"
+
 export async function PATCH(req) {
 
     await connectToDatabase();
@@ -22,6 +24,9 @@ export async function PATCH(req) {
         );
 
         if (!proj) return NextResponse.json({ status: 404, message: "Project not found" });
+
+        revalidatePath('/projs')
+        revalidateTag("projs")
 
         return NextResponse.json({ status: 200, message: "Upload completed successfully" });
     } catch (err) {

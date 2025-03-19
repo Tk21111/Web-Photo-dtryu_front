@@ -26,7 +26,7 @@ export default function Login() {
         setError("");
 
         try {
-            const response = await fetch("http://localhost:3101/login", {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_HOST}/api/user`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

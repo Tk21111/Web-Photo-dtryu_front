@@ -4,6 +4,8 @@ import { use, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { selectCurrentToken } from "../api/redux/authSlice";
 import { json } from "stream/consumers";
+import serviceAccConverter from "../utils/serviceAccConvertong";
+import Image from "next/image";
 
 type Proj = {
   _id: string;
@@ -15,12 +17,14 @@ type Proj = {
   size: number;
   timeReqFullfill: string;
   originalTime :string;
+  serviceAcc : number;
 };
 
 export default function List({ proj }: { proj: Proj }) {
   const [isOpen, setIsOpen] = useState(false); // Default closed state
   const [click , setClick] = useState(false);
   const [reqFail ,setreqFail]= useState(false);
+  const [service , setService] = useState(serviceAccConverter(proj.serviceAcc));
   const accessToken = useSelector(selectCurrentToken);
   const handleSubmit = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -87,36 +91,40 @@ export default function List({ proj }: { proj: Proj }) {
 
 
   return (
-    <div className={`w-full h-[20vh] pl-2 py-1 border-2 rounded-2xl shadow-2xl transition-all duration-500 ease-in-out
+    <div className={`w-full h-[20vh] pl-2 py-1 border-2 rounded-2xl shadow-2xl bg-accent-content transition-all duration-500 ease-in-out
       ${isOpen && "h-full"}
       ${proj.status === "uploading" || click ? "bg-orange-300 text-orange-800 animate-pulse" : ""}
       ${proj.status === "onDrive" ? " text-white" : ""} 
       ${proj.status === "deleting" ? "bg-orange-200 blur-2xl shadow-lg" : ""} 
       ${reqFail ? "bg-red-200 shadow-lg animate-none" : ""} 
      hover:shadow-orange-200 hover:scale-105 opacity-85 hover:opacity-100 transform origin-center`}>
-        <div className={`relative flex size-4`}>
-          <span
-            className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-75 
-              ${proj.status === "resting" ? "bg-yellow-100" : "bg-red-400"}
-              `}
-          />
-          {/* Main red dot */}
-          <span className={`relative inline-flex size-4 rounded-full 
-              ${proj.status === "resting" ? "bg-orange-500" : "bg-red-500"}
-            `}></span>
-        </div>
+        
 
       
       <div className="flex flex-row justify-between items-center p-2" onClickCapture={() => setIsOpen(!isOpen)}>
-        <div className="text-xl text-white uppercase font-semibold ">
-          {proj.name + " " + (proj.originalTime?.split("T")[0] || '')}
+        <div className="flew flex-col space-y-1">
+          <div className="text-xl text-white uppercase font-semibold ">
+            {proj.name + " " + (proj.originalTime?.split("T")[0] || '')}
+          </div>
+          <div className="text-sm text-white uppercase font-semibold flew flex-row my-3.5 space-y-1">
+            <Image src={service[2] || ""} alt="Description of image" className="relative inline-flex size-8 rounded-full " />
+            <p>{"by " + service[0]}</p>
+            
+          </div>
         </div>
+        
 
         <div className="flex-col space-y-1.5">
           <div className="flex-row space-x-1">
             {["pre-upload", "resting"].includes(proj.status) && (
               <button
-                className={`border-2 rounded-lg px-2 py-0.5 bg-blue-600 w-2lg hover:bg-yellow-400 transition-colors duration-1000
+                className={`
+                 transition-all duration-500 ease-in-out 
+                bg-blue-500 text-white text-xl font-bold 
+                px-3.5 py-2 rounded-xl border-4 
+                border-blue-700 shadow-lg 
+                hover:bg-yellow-500 hover:border-yellow-600 
+                hover:text-white hover:scale-110 hover:shadow-2xl
                  ${click && "hover:opacity-0 transition-opacity duration-1000"}
                 `}
 
@@ -138,17 +146,38 @@ export default function List({ proj }: { proj: Proj }) {
             }
           </div>
           
+          <div className="space-y-3">
+            <div className={`relative flex size-4 translate-x-[11vh] translate-y-2`}>
+            <span
+              className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-75 
+                ${proj.status === "resting" ? "bg-yellow-100" : "bg-red-400"}
+                `}
+            />
+            {/* Main red dot */}
+            <span className={`relative inline-flex size-4 rounded-full 
+                ${proj.status === "resting" ? "bg-orange-500" : "bg-red-500"}
+              `}></span>
+          </div>
           {
+            
             "onDrive" === proj.status && (
               <a
               href={`https://drive.google.com/drive/folders/${proj.locationOnDrive}`}
-              className="transition-colors duration-1000 ease-in-out bg-green-500 p-1 rounded-lg border-2 border-emerald-700 hover:bg-pink-500 hover:border-red-600 hover:text-white"
-            >
+              className="transition-all duration-500 ease-in-out 
+               bg-green-500 text-white text-xl font-bold 
+               px-6 py-3 rounded-xl border-4 
+               border-emerald-700 shadow-lg 
+               hover:bg-pink-500 hover:border-red-600 
+               hover:text-white hover:scale-110 hover:shadow-2xl"
+              >
+                
               Drive
             </a>       
           )
           }
-          <p className="text-3sm text-white">{ reqFail? "fail" : click? "requested" : proj.status.toLocaleLowerCase()}</p>
+          <p className="text-3sm text-white my-3 text-center ">{ reqFail? "fail" : click? "requested" : proj.status.toLocaleLowerCase()}</p>
+          </div>
+          
         </div>
       
       </div>

@@ -6,6 +6,7 @@ import serviceAccSelector from "../../../utils/serviceAccSelector";
 import User from "../../../model/User"
 import schedule from 'node-schedule';
 import checkAndDel from "../../../utils/checkAndDel";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 
 
@@ -37,7 +38,7 @@ export async function PATCH(req) {
                         const drive = serviceAccSelector(i);
                         
                         const driveUsed = await drive.about.get({ fields: 'storageQuota' });
-                        console.log(driveUsed && (driveUsed.data.storageQuota.limit - userInfo.driveBuffer) - driveUsed.data.storageQuota.usage - projectReq.size > 0);
+                        console.log(driveUsed && (driveUsed.data.storageQuota.limit - userInfo.driveBuffer) - driveUsed.data.storageQuota.usage - projectReq.size );
                         console.log(i)
                         // Check if there is enough storage
                         if (driveUsed && (driveUsed.data.storageQuota.limit - userInfo.driveBuffer) - driveUsed.data.storageQuota.usage - projectReq.size > 0) {
@@ -53,10 +54,14 @@ export async function PATCH(req) {
             }
             const haveServiceAccFree = await checkStorage();
 
+            
+
             //find free acc
+
             if(haveServiceAccFree !== null){
                 return [haveServiceAccFree, null]
             }
+            
             //quese auto func 
             //if just newest uploadfirst , overrideable
 
@@ -99,7 +104,7 @@ export async function PATCH(req) {
         }
 
         const [serviceAccUse, delProj] = await driveUsageCheck();
-        if (!serviceAccUse) {
+        if (serviceAccUse === null) {
             return NextResponse.json({ error: "No available Google Drive storage" }, { status: 500 });
         }
 
@@ -146,6 +151,8 @@ export async function PATCH(req) {
             const result = checkAndDel()
             console.log(result === "Delt fail" ? scheduleFail(0) : "Delt successs at " + new Date())
         })
+
+        revalidateTag("projs")
 
         return NextResponse.json({ message: "Project request updated successfully" }, { status: 201 });
     } catch (err) {
