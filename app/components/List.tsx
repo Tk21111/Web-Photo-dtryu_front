@@ -190,7 +190,7 @@ export default function List({ proj }: { proj: Proj }) {
           }}
         >
           <p className="text-sm">Location on Drive: {proj.locationOnDrive}</p>
-          <p className="text-sm">Size: {Math.round(proj.size / (1024 ** 3))} GB</p>
+          <p className="text-sm">Size: {(proj.size / (1024 ** 3)).toFixed(2)} GB</p>
           <p className="text-sm">Id: {proj._id}</p>
         </div>
       )}
