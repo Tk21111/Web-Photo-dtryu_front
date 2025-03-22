@@ -13,7 +13,6 @@ export const SocketContextProvider = ({children}:{ children : React.ReactNode}) 
     const [socket , setSocket] = useState<Socket | null>(null);
     const [isSocketConnected , setIsSocketConnected] = useState(false);
 
-    console.log("isConnected >> " , isSocketConnected);
     //init a socket 
     useEffect(()=>{
         const newSocket = io();//use same server
