@@ -31,7 +31,8 @@ export default function ProjList() {
 
       if (!res.ok) throw new Error(`Failed to fetch data: ${res.status}`);
 
-      const data: Proj[] = await res.json();
+      let data: Proj[] = await res.json();
+      data = data.sort((a,b)=> Date.parse(b.originalTime) - Date.parse(a.originalTime))
       setProjs(data);
       setError(null);
     } catch (err) {
@@ -40,7 +41,7 @@ export default function ProjList() {
     }
   };
 
-  console.log(error);
+  
 
   useEffect(() => {
     fetchProjects(); // Initial fetch
@@ -62,6 +63,9 @@ export default function ProjList() {
             ) : (
                 <p>No projects found.</p>
             )}
+            {
+              error && <p>{error}</p>
+            }
           </div>
   );
 }
