@@ -150,12 +150,12 @@ export default function List({ proj }: { proj: Proj }) {
             <div className={`relative flex size-4 translate-x-23 translate-y-2`}>
             <span
               className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-75 
-                ${proj.status === "resting" ? "bg-yellow-100" : "bg-red-400"}
+                ${proj.status === "resting" ? "bg-yellow-100" :  (Date.now() - Number(proj.timeReqFullfill) < 0) ? "bg-red-400" : null}
                 `}
             />
             {/* Main red dot */}
             <span className={`relative inline-flex size-4 rounded-full 
-                ${proj.status === "resting" ? "bg-orange-500" : "bg-red-500"}
+                ${proj.status === "resting" ? "bg-orange-500" : (Date.now() - Number(proj.timeReqFullfill) < 0) ? "bg-red-500" : null}
               `}></span>
           </div>
           {
