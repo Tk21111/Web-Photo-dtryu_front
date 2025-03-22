@@ -40,6 +40,8 @@ export default function ProjList() {
     }
   };
 
+  console.log(error);
+
   useEffect(() => {
     fetchProjects(); // Initial fetch
 

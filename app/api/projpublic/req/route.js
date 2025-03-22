@@ -6,7 +6,7 @@ import serviceAccSelector from "../../../utils/serviceAccSelector";
 import User from "../../../model/User"
 import schedule from 'node-schedule';
 import checkAndDel from "../../../utils/checkAndDel";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidateTag } from "next/cache";
 
 
 
@@ -139,7 +139,8 @@ export async function PATCH(req) {
                 if(result === "Delt fail"){
                     scheduleFail(i)
                 } else {
-                    "Delt successs at " + new Date()
+                    const dateNow = new Date()
+                    console.log("Delt successs at " , dateNow) 
                 }
             })
             i++

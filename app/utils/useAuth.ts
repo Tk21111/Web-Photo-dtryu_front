@@ -5,7 +5,7 @@ import { refreshAccessToken } from "./refreshToken"
 const useAuth = ()=>{
     useEffect(()=> {
         const getAccessToken = async () => {
-            const newAccessToken  = await refreshAccessToken();
+            await refreshAccessToken();
         }
 
         getAccessToken();

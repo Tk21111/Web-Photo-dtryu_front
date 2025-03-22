@@ -1,7 +1,7 @@
 "use client"
 import { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { login, selectCurrentToken } from "@/app/api/redux/authSlice";
+import { useDispatch } from "react-redux";
+import { login } from "@/app/api/redux/authSlice";
 import { useRouter } from "next/navigation"; // ✅ Use next/navigation for App Router
 
 

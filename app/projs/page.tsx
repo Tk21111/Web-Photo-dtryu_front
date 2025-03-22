@@ -1,18 +1,5 @@
-import List from "../components/List";
-import socket from "socket.io-client";
 import ProjList from "./ProjList";
-type Proj = {
-  _id: string;
-  name: string;
-  user: string;
-  status: string;
-  locationOnDisk: string;
-  locationOnDrive: string;
-  size: number;
-  timeReqFullfill: string;
-  originalTime :string;
-  serviceAcc : number;
-};
+
   
   export default async function Projs() {
     try {

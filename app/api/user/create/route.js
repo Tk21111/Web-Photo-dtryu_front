@@ -7,7 +7,7 @@ export async function POST(req) {
     
     await connectToDatabase();
     try {
-        const { user, pwd, name, age, sex } = await req.json();
+        const { user, pwd } = await req.json();
         if (!user || !pwd) return NextResponse.json({ status: 400 });
 
         const duplicate = await User.findOne({ username: user }).lean().exec();

@@ -46,7 +46,7 @@ export async function PATCH(req) {
 
     await connectToDatabase();
     try {
-        const { projId, size, uploadTicketId } = await req.json();
+        const { projId, uploadTicketId } = await req.json();
 
         if (!projId || !uploadTicketId) return NextResponse.json({ status: 400, message: "Missing required fields" });
 

@@ -1,9 +1,8 @@
-import Drive from "../../../model/Drive";
+
 import UploadTicket from "../../../model/UploadTicket";
 import { NextResponse } from "next/server";
 import checkAndDel from "../../../utils/checkAndDel";
 import { connectToDatabase } from "../../../lib/mongodb";
-import { serviceAccSelector } from "../../../utils/serviceAccSelector";
 import { revalidatePath } from "next/cache";
 
 

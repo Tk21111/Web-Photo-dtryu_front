@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Providers from "./Providers"; // Import client-side Redux provider
-import useAuth from "./utils/useAuth";
 import AuthProvider from "./AuthProvider";
 import SocketProvider from "@/context/SocketProvider";
 

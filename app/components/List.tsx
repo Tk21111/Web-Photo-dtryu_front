@@ -1,11 +1,10 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { selectCurrentToken } from "../api/redux/authSlice";
-import { json } from "stream/consumers";
 import serviceAccConverter from "../utils/serviceAccConvertong";
-import Image from "next/image";
+import Image, { StaticImageData } from "next/image";
 
 type Proj = {
   _id: string;
@@ -24,7 +23,7 @@ export default function List({ proj }: { proj: Proj }) {
   const [isOpen, setIsOpen] = useState(false); // Default closed state
   const [click , setClick] = useState(false);
   const [reqFail ,setreqFail]= useState(false);
-  const [service , setService] = useState(serviceAccConverter(proj.serviceAcc));
+  const [service, setService] = useState<(string | StaticImageData)[]>();
   const accessToken = useSelector(selectCurrentToken);
   const handleSubmit = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -82,6 +81,7 @@ export default function List({ proj }: { proj: Proj }) {
   }
 
   useEffect(() => {
+    setService(serviceAccConverter(proj.serviceAcc))
     if(proj.status === "uploading"){
       setClick(true)
     } else if (proj.status === "upload fail"){
@@ -91,7 +91,7 @@ export default function List({ proj }: { proj: Proj }) {
 
 
   return (
-    <div className={`w-full h-[20vh] pl-2 py-1 border-2 rounded-2xl shadow-2xl bg-accent-content transition-all duration-500 ease-in-out
+    <div className={`w-full h-fit pl-2 py-1 border-2 rounded-2xl shadow-2xl bg-accent-content transition-all duration-500 ease-in-out
       ${isOpen && "h-full"}
       ${proj.status === "uploading" || click ? "bg-orange-300 text-orange-800 animate-pulse" : ""}
       ${proj.status === "onDrive" ? " text-white" : ""} 
@@ -107,8 +107,8 @@ export default function List({ proj }: { proj: Proj }) {
             {proj.name + " " + (proj.originalTime?.split("T")[0] || '')}
           </div>
           <div className="text-sm text-white uppercase font-semibold flew flex-row my-3.5 space-y-1">
-            <Image src={service[2] || ""} alt="Description of image" className="relative inline-flex size-8 rounded-full " />
-            <p>{"by " + service[0]}</p>
+            <Image src={service  && service[2] || ""} alt="Description of image" className="relative inline-flex size-8 rounded-full " />
+            <p>{"by " + (service && service[0])}</p>
             
           </div>
         </div>
@@ -147,7 +147,7 @@ export default function List({ proj }: { proj: Proj }) {
           </div>
           
           <div className="space-y-3">
-            <div className={`relative flex size-4 translate-x-[11vh] translate-y-2`}>
+            <div className={`relative flex size-4 translate-x-23 translate-y-2`}>
             <span
               className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-75 
                 ${proj.status === "resting" ? "bg-yellow-100" : "bg-red-400"}

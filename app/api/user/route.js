@@ -1,5 +1,3 @@
-import UploadTicket from "../../model/UploadTicket";
-import Drive from "../../model/Drive";
 import User from "../../model/User";
 import { connectToDatabase } from "../../lib/mongodb";
 import bcrypt from "bcrypt";
