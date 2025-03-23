@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import ProjList from "./ProjList";
 
   
@@ -8,7 +9,9 @@ import ProjList from "./ProjList";
         <div className="py-10 ">
            
           
-            <ProjList/>
+            <Suspense fallback={<div>Loading...</div>}>
+                <ProjList />
+            </Suspense>
         </div>
       );
     } catch (error) {

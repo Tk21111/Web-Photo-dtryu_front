@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { selectCurrentToken } from "../api/redux/authSlice";
+import { selectCurrentToken, selectRoles, selectUserId } from "../api/redux/authSlice";
 import serviceAccConverter from "../utils/serviceAccConvertong";
 import Image, { StaticImageData } from "next/image";
 
@@ -25,6 +25,8 @@ export default function List({ proj }: { proj: Proj }) {
   const [reqFail ,setreqFail]= useState(false);
   const [service, setService] = useState<(string | StaticImageData)[]>();
   const accessToken = useSelector(selectCurrentToken);
+  const roles = useSelector(selectRoles);
+  const userId = useSelector(selectUserId)
   const handleSubmit = async (e: React.MouseEvent) => {
     e.preventDefault();
 
@@ -136,7 +138,7 @@ export default function List({ proj }: { proj: Proj }) {
               </button> 
             ) }
             {
-              accessToken && (
+              (roles?.includes("Admin") || proj.user === userId  ) && (
                 <button
                 className="border-2 rounded-lg px-2 py-0.5 bg-red-600 "
                 onClick={handleDelProjDrive}

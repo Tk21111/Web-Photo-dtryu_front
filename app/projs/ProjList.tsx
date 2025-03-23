@@ -68,7 +68,7 @@ export default function ProjList() {
   const filteredProjs = useMemo(() => {
     
     //set a permission to local storage to keep it for eternity if something bad not happen
-    let permissons = localStorage.getItem("permissions") || "";
+    const permissons = localStorage.getItem("permissions") || "";
     let newPermissons = searchType ? [searchType] : [];
 
     //filter out dup and all
@@ -92,9 +92,10 @@ export default function ProjList() {
         (!userId || proj.user === userId || searchType === "all" || roles?.includes("Admin")) 
 
     );
-  }, [projs, search, searchType]);
+  }, [projs, search, searchType ,userId , roles]);
 
   return (
+    
     <>
       <div className="flex flex-row justify-between">
         <h2 className="justify-center text-3xl font-bold my-2">All Projects</h2>
