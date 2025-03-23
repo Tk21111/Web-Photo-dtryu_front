@@ -46,7 +46,7 @@ const driveShema = new mongoose.Schema({
     },
     public : {
         type : Boolean,
-        default : true
+        default : false
     },
     serviceAcc : {
         type : Number,
@@ -55,6 +55,14 @@ const driveShema = new mongoose.Schema({
     file : {
         type : [String],
         default : []
+    },
+    permanent : {
+        type : Boolean,
+        default : false
+    },
+    group :{
+        type : String,
+        default : null
     }
     /*---- end ----*/
 },{

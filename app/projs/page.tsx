@@ -7,7 +7,7 @@ import ProjList from "./ProjList";
       return (
         <div className="py-10 ">
            
-          <h2 className="justify-center text-3xl font-bold my-2">All Projects</h2>
+          
             <ProjList/>
         </div>
       );
@@ -17,10 +17,3 @@ import ProjList from "./ProjList";
       return <p>Error fetching projects. Please try again later.</p>;
     }
   }
-  
-
-  /*
-  <>
-                      <List key={proj._id} proj={proj}/>
-                    </>
-  */

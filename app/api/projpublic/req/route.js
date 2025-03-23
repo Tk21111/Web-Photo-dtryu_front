@@ -66,7 +66,7 @@ export async function PATCH(req) {
             //if just newest uploadfirst , overrideable
 
             //---------------------- find proj to del ---------------------------
-            //sort by oldest time
+            //sort by servicAcc
             let projsArr = [];
             for (let y of projects){
 
@@ -77,11 +77,17 @@ export async function PATCH(req) {
                 }
                 
             }
+
+            //filterout permanent and sorted by oldest
             let projsArrSorted = []
             for (let p of projsArr){
-                const projByOldest =  p.sort((a, b) => Date.parse(b.timeReqFullfill) - Date.parse(a.timeReqFullfill));
+
+                const proFilterPermanent = p.filter((val) => !val.permanent);
+                const projByOldest =  proFilterPermanent.sort((a, b) => Date.parse(b.timeReqFullfill) - Date.parse(a.timeReqFullfill));
                 projsArrSorted.push(projByOldest[0])
             }
+
+            //get oldest global projs 
             let oldestProjService = projsArrSorted.sort((a,b) => Date.parse(b.timeReqFullfill) - Date.parse(a.timeReqFullfill));
             const serviceAccUse = oldestProjService[0].serviceAcc;
             
@@ -92,7 +98,7 @@ export async function PATCH(req) {
             let delProj = [];
             let sum = 0;
 
-            //find the oldest to del 
+            //determine which proj to del
             for (const curr of projsArr[serviceAccUse]) {
                 delProj.push(curr._id);
                 sum += curr.size;

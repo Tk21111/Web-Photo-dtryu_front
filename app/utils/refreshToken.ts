@@ -24,18 +24,13 @@ export const refreshAccessToken = async () => {
         if (!response.ok) {
             throw new Error(data.message || "Failed to refresh access token");
         }
-
-        const newAccessToken = data.accessToken;
         
-        if (newAccessToken) {
+        if (data.accessToken) {
             // Save the new access token to Redux and localStorage
-            store.dispatch(login(newAccessToken)); // Save to Redux
-            if (typeof window !== "undefined") {
-                localStorage.setItem("accessToken", newAccessToken); // Save to localStorage
-            }
+            store.dispatch(login({accessToken : data.accessToken , userId : data.userId , roles : data.roles})); // Save to Redux
         }
 
-        return newAccessToken;
+        return data.accessToken;
     } catch (error) {
         console.error("Error refreshing access token:", error);
         return null;

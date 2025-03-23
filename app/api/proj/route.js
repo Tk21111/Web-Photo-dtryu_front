@@ -12,7 +12,7 @@ export async function POST(req) {
 
     await connectToDatabase();
     try {
-        const { name, locationOnDisk, size, originalTime, priority, serviceAcc , user} = await req.json();
+        const { name, locationOnDisk, size, originalTime, priority, serviceAcc , user , group , pubilc} = await req.json();
         
 
         if (!user){ console.log("401"); return NextResponse.json({ status: 401, message: "Unauthorized" }); };
@@ -29,10 +29,9 @@ export async function POST(req) {
             originalTime,
             priority,
             serviceAcc,
+            public : pubilc,
+            group
         });
-        console.log("hello")
-
-        console.log(response._id);
         return NextResponse.json({ projId: response._id });
     } catch (err) {
         console.error(err + ": createProject");

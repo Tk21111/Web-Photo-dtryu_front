@@ -37,6 +37,7 @@ export async function POST(req) {
             aka: found?.aka || null,
             userId: found._id,
             score: found.score || 0,
+            roles : found.roles || null
         });
     } else {
         return NextResponse.json({ status: 401 });
@@ -69,6 +70,7 @@ export async function PATCH(req) {
             aka: found?.aka || null,
             userId: found._id,
             score: found.score || 0,
+            roles : found.roles || null
         });
     } catch (err) {
         console.error(err + " ; refresh");

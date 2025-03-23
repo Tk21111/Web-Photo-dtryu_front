@@ -18,6 +18,8 @@ export default function Login() {
         accessToken?: string;
         refreshToken?: string;
         message?: string;
+        userId : string;
+        roles : [string];
     }
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -41,7 +43,7 @@ export default function Login() {
             }
 
             if (data.accessToken) {
-                dispatch(login(data.accessToken)); // Store token in Redux
+                dispatch(login({accessToken : data.accessToken , userId : data.userId , roles : data.roles})); // Store token in Redux
                 
                 router.push("/projs"); // Redirect user to dashboard
             }
