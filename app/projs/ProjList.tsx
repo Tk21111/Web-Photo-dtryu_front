@@ -2,10 +2,11 @@
 
 import { useState, useEffect, useMemo } from "react";
 import io from "socket.io-client";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import List from "../components/List";
 import { useSelector } from "react-redux";
 import { selectRoles, selectUserId } from "../api/redux/authSlice";
+import { serviceAccInfo } from "../utils/serviceAccConvertong";
 
 
 type Proj = {
@@ -29,9 +30,16 @@ export default function ProjList() {
   const [error, setError] = useState<string | null>(null);
   const [permissionsPage , setPermissionsPage] = useState<string[]>([]);
 
+  const [copy , setCopy] = useState<boolean>(false);
+
+  const path = usePathname();
+
   const searchParams = useSearchParams();
   const search = searchParams.get("q") || "";
-  const searchType = searchParams.get("type") || "";
+  const permission = searchParams.get("type") || "";
+  const searchType = searchParams.get("t") || ""; 
+
+  const router = useRouter()
 
   const userId = useSelector(selectUserId);
   const roles = useSelector(selectRoles);
@@ -69,7 +77,7 @@ export default function ProjList() {
     
     //set a permission to local storage to keep it for eternity if something bad not happen
     const permissons = localStorage.getItem("permissions") || "";
-    let newPermissons = searchType ? [searchType] : [];
+    let newPermissons = permission ? [permission] : [];
 
     //filter out dup and all
     newPermissons = newPermissons.filter(val => !permissons.includes(val) && val !== "all")
@@ -87,12 +95,13 @@ export default function ProjList() {
     return projs.filter(
       (proj) =>     
         (!search || proj._id.includes(search)) &&
-        ((!userId ? newPermissons?.includes(proj.group || "") : true) || proj.group === undefined || proj.group === null || proj.group === ""|| searchType === "all") &&
+        ((!userId ? newPermissons?.includes(proj.group || "") : true) || proj.group === undefined || proj.group === null || proj.group === ""|| permission === "all") &&
+        (!searchType || proj.group === searchType) &&
         //when login see only your's projs overwrite when all
-        (!userId || proj.user === userId || searchType === "all" || roles?.includes("Admin")) 
+        (!userId || proj.user === userId || permission === "all" || roles?.includes("Admin")) 
 
     );
-  }, [projs, search, searchType ,userId , roles]);
+  }, [projs, search, permission ,userId , roles]);
 
   return (
     
@@ -100,16 +109,32 @@ export default function ProjList() {
       <div className="flex flex-row justify-between">
         <h2 className="justify-center text-3xl font-bold my-2">All Projects</h2>
         <div className="dropdown dropdown-left">
-            <div tabIndex={0} role="button" className="btn m-1 bg-gray-300 border-gray-400 hover:bg-gray-600 hover:border-gray-700 hover:scale-110 transition-all duration-300 focus:bg-gray-700">Permi</div>
+            <div tabIndex={0} role="button" className="btn m-1 bg-gray-300 border-gray-400 hover:bg-gray-600 hover:border-gray-700 hover:scale-110 transition-all duration-300 focus:bg-gray-700">Setting</div>
             <ul tabIndex={0} className="dropdown-content menu-sm bg-base-100 rounded-box z-1 w-30 p-2 shadow-sm">
+              <li className="font-semibold">StorageUsed</li>
+              <li className="text-sm">{((projs.reduce((sum , curr) => sum + curr.size, 0)) / (1024**3)).toFixed(2) + " / " + (serviceAccInfo.length *14.5) + " GB"}</li>
               <li className="font-semibold">Allow</li>
+              <li className="text-gray-400">- public ({ projs.reduce((sum ,curr)=> !curr?.group ? sum+1 : sum ,0)})</li>
               {permissionsPage.map((perm , i)=>(
-                  <li key={i} className="text-gray-400">{"- "+ perm.slice(0,10) + (perm.length > 9 ? "..." : "")}</li>
+                  <li key={i} className="text-gray-400">{"- "+ perm.slice(0,10) + (perm.length > 9 ? "..." : "") + " (" +  projs.reduce((sum ,curr) => curr?.group === perm ? sum+1 : sum ,0)+")"}</li>
                 ))}
             </ul>
         </div>
         
       </div>
+      <div className="flex flex-rol space-x-2 justify-items-center">
+        <button className="btn btn-ghost" onClick={()=> router.push("/projs")} disabled={!permissionsPage}>GO TO ALL</button>
+        {searchType && 
+          <button 
+          className="btn btn-dash p-2 hover:bg-blue-700 transition-all duration-200 hover:scale-110"
+          onClick={()=> {
+            navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_HOST}/${path}?${permissionsPage.includes(searchType) || roles?.includes("User") || roles?.includes("Admin") ? `type=${searchType}&` : ""}t=${searchType}`); 
+            setCopy(true); 
+            setTimeout(() => setCopy(false), 5000);}}
+          >{copy ? "copied to clipboard!!" : "share group"}</button>
+        }
+      </div>
+      
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 rounded-box shadow-md py-20 transition delay-150 duration-300 ease-in-out">
       {filteredProjs.length > 0 ? (
         filteredProjs.map((proj) => <List key={proj._id} proj={proj} />)

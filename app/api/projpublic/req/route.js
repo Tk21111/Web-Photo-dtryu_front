@@ -78,11 +78,11 @@ export async function PATCH(req) {
                 
             }
 
-            //filterout permanent and sorted by oldest
+            //filterout permanent and diffrent user and sorted by oldest
             let projsArrSorted = []
             for (let p of projsArr){
 
-                const proFilterPermanent = p.filter((val) => !val.permanent);
+                const proFilterPermanent = p.filter((val) => !val.permanent && val.user === projectReq.user);
                 const projByOldest =  proFilterPermanent.sort((a, b) => Date.parse(b.timeReqFullfill) - Date.parse(a.timeReqFullfill));
                 projsArrSorted.push(projByOldest[0])
             }

@@ -3,7 +3,6 @@ import UploadTicket from "../../../model/UploadTicket";
 import { NextResponse } from "next/server";
 import checkAndDel from "../../../utils/checkAndDel";
 import { connectToDatabase } from "../../../lib/mongodb";
-import { revalidatePath } from "next/cache";
 
 
 
@@ -22,7 +21,6 @@ export async function PATCH(req) {
     
             await checkAndDel();
 
-            revalidatePath('/projs')
             return NextResponse.json({ status : 201});
 
             

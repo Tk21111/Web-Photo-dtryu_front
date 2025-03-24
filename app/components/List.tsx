@@ -5,6 +5,7 @@ import { useSelector } from "react-redux";
 import { selectCurrentToken, selectRoles, selectUserId } from "../api/redux/authSlice";
 import serviceAccConverter from "../utils/serviceAccConvertong";
 import Image, { StaticImageData } from "next/image";
+import { usePathname } from "next/navigation";
 
 type Proj = {
   _id: string;
@@ -17,6 +18,7 @@ type Proj = {
   timeReqFullfill: string;
   originalTime :string;
   serviceAcc : number;
+  group : string | undefined;
 };
 
 export default function List({ proj }: { proj: Proj }) {
@@ -27,6 +29,10 @@ export default function List({ proj }: { proj: Proj }) {
   const accessToken = useSelector(selectCurrentToken);
   const roles = useSelector(selectRoles);
   const userId = useSelector(selectUserId)
+
+  const path = usePathname()
+
+  const [copy , setCopy] = useState<boolean>(false);
   const handleSubmit = async (e: React.MouseEvent) => {
     e.preventDefault();
 
@@ -153,12 +159,12 @@ export default function List({ proj }: { proj: Proj }) {
             <div className={`relative flex size-4 translate-x-23 translate-y-2`}>
             <span
               className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-75 
-                ${proj.status === "resting" ? "bg-yellow-100" :  (Date.parse(proj.timeReqFullfill) +1000*60*60 - Date.now() < 0) ?  null : "bg-red-400"}
+                ${proj.status === "resting" ? "bg-yellow-100" :  (Date.parse(proj.timeReqFullfill) +1000*60*6*24 - Date.now() < 0) ?  null : "bg-red-400"}
                 `}
             />
             {/* Main red dot */}
             <span className={`relative inline-flex size-4 rounded-full 
-                ${proj.status === "resting" ? "bg-orange-500" : ( Date.parse(proj.timeReqFullfill) +1000*60*60 - Date.now() < 0) ?  null : "bg-red-500"}
+                ${proj.status === "resting" ? "bg-orange-500" : ( Date.parse(proj.timeReqFullfill) +1000*60*60*24 - Date.now() < 0) ?  null : "bg-red-500"}
               `}></span>
           </div>
           {
@@ -172,6 +178,8 @@ export default function List({ proj }: { proj: Proj }) {
                border-emerald-700 shadow-lg 
                hover:bg-pink-500 hover:border-red-600 
                hover:text-white hover:scale-110 hover:shadow-2xl"
+
+               target="_blank" //open link in new tab
               >
                 
               Drive
@@ -195,6 +203,14 @@ export default function List({ proj }: { proj: Proj }) {
           <p className="text-sm">Location on Drive: {proj.locationOnDrive}</p>
           <p className="text-sm">Size: {(proj.size / (1024 ** 3)).toFixed(2)} GB</p>
           <p className="text-sm">Id: {proj._id}</p>
+          {proj.group && <p className="text-sm">Group: {proj.group}</p>}
+          <button 
+          className="btn btn-dash my-2 p-2 hover:bg-blue-700 transition-all duration-200 hover:scale-110"
+          onClick={()=> {
+            navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_HOST}/${path}?q=${proj._id}${(proj.group ? "&type="+proj.group : "")}`); 
+            setCopy(true); 
+            setTimeout(() => setCopy(false), 5000);}}
+          >{copy ? "copied to clipboard!!" : "share"}</button>
         </div>
       )}
 
