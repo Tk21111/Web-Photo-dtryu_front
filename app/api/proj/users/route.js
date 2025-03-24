@@ -29,7 +29,7 @@ export async function GET() {
     try {
        
         const uploadReq = await UploadTicket.find({ del: null , status : "awaitUpload"}).populate("upload");   
-        console.log(uploadReq)
+        
         return Response.json(uploadReq)
     } catch (err){
         console.log(err + " ; getUploadReq");
