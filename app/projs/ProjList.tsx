@@ -21,6 +21,7 @@ type Proj = {
   originalTime: string;
   serviceAcc: number;
   group: string | undefined;
+  lock : boolean | undefined;
 };
 
 const socket = io();
@@ -95,7 +96,7 @@ export default function ProjList() {
     return projs.filter(
       (proj) =>     
         (!search || proj._id.includes(search)) &&
-        ((!userId ? newPermissons?.includes(proj.group || "") : true) || proj.group === undefined || proj.group === null || proj.group === ""|| permission === "all") &&
+        ((!userId ? proj.lock ? newPermissons?.includes(proj.group || "") : true : true) || proj.group === undefined || proj.group === null || proj.group === ""|| permission === "all") &&
         (!searchType || proj.group === searchType) &&
         //when login see only your's projs overwrite when all
         (!userId || proj.user === userId || permission === "all" || roles?.includes("Admin")) 

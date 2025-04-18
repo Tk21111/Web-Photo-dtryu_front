@@ -63,6 +63,10 @@ const driveShema = new mongoose.Schema({
     group :{
         type : String,
         default : null
+    },
+    lock : {
+        type : Boolean,
+        default : false
     }
     /*---- end ----*/
 },{
