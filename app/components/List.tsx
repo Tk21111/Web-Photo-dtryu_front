@@ -19,6 +19,7 @@ type Proj = {
   originalTime :string;
   serviceAcc : number;
   group : string | undefined;
+  lock : boolean | undefined;
 };
 
 export default function List({ proj }: { proj: Proj }) {
@@ -207,7 +208,7 @@ export default function List({ proj }: { proj: Proj }) {
           <button 
           className="btn btn-dash my-2 p-2 hover:bg-blue-700 transition-all duration-200 hover:scale-110"
           onClick={()=> {
-            navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_HOST}/${path}?q=${proj._id}${(proj.group ? "&type="+proj.group : "")}`); 
+            navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_HOST}/${path}?q=${proj._id}${(proj.lock && proj.group? "&type="+proj.group : "")}`); 
             setCopy(true); 
             setTimeout(() => setCopy(false), 5000);}}
           >{copy ? "copied to clipboard!!" : "share"}</button>
