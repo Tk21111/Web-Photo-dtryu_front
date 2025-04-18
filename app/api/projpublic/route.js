@@ -5,7 +5,7 @@ import { headers } from "next/headers";
 
 export async function GET() {
     await connectToDatabase();
-    const projs = await Drive.find({ public: true });
+    const projs = await Drive.find();
     const headersList = await headers()
 
     console.log(headersList.get('x-forwarded-for'))

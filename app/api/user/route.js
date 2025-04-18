@@ -1,9 +1,11 @@
 import User from "../../model/User";
+import Drive from "../../model/Drive";
 import { connectToDatabase } from "../../lib/mongodb";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { NextResponse } from "next/server";
 
+//login
 export async function POST(req) {
     await connectToDatabase();
 
@@ -18,6 +20,9 @@ export async function POST(req) {
     if (match) {
         const roles = found.roles;
 
+        const foundGroup = await Drive.distinct("group");
+
+        
         const accessToken = jwt.sign(
             { userinfo: { username: found.username, roles } },
             process.env.ACCESS_TOKEN,
@@ -36,7 +41,7 @@ export async function POST(req) {
             image: found?.image || null,
             aka: found?.aka || null,
             userId: found._id,
-            score: found.score || 0,
+            foundGroup,
             roles : found.roles || null
         });
     } else {
@@ -44,6 +49,7 @@ export async function POST(req) {
     }
 }
 
+//refreshToken
 export async function PATCH(req) {
     await connectToDatabase();
 
@@ -78,6 +84,7 @@ export async function PATCH(req) {
     }
 }
 
+//logout
 export async function GET(req) {
     await connectToDatabase();
     

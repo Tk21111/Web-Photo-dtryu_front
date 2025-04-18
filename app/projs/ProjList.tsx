@@ -22,6 +22,7 @@ type Proj = {
   serviceAcc: number;
   group: string | undefined;
   lock : boolean | undefined;
+  public : boolean
 };
 
 const socket = io();
@@ -96,13 +97,14 @@ export default function ProjList() {
     return projs.filter(
       (proj) =>     
         (!search || proj._id.includes(search)) &&
-        ((!userId ? proj.lock ? newPermissons?.includes(proj.group || "") : true : true) || proj.group === undefined || proj.group === null || proj.group === ""|| permission === "all") &&
+        ((!userId ? proj.lock ? newPermissons?.includes(proj.group || "") : true || proj.public  : true) || proj.group === undefined || proj.group === null || proj.group === ""|| permission === "all") &&
         (!searchType || proj.group === searchType) &&
         //when login see only your's projs overwrite when all
         (!userId || proj.user === userId || permission === "all" || roles?.includes("Admin")) 
+        
 
     );
-  }, [projs, search, permission ,userId , roles]);
+  }, [projs, searchParams, permission ,userId , roles]);
 
   return (
     
@@ -129,7 +131,7 @@ export default function ProjList() {
           <button 
           className="btn btn-dash p-2 hover:bg-blue-700 transition-all duration-200 hover:scale-110"
           onClick={()=> {
-            navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_HOST}/${path}?${permissionsPage.includes(searchType) || roles?.includes("User") || roles?.includes("Admin") ? `type=${searchType}&` : ""}t=${searchType}`); 
+            navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_HOST}/${path}?${permissionsPage.includes(searchType) || roles?.includes("User") || roles?.includes("Admin")  ? `type=${searchType}&` : ""}t=${searchType}`); 
             setCopy(true); 
             setTimeout(() => setCopy(false), 5000);}}
           >{copy ? "copied to clipboard!!" : "share group"}</button>
