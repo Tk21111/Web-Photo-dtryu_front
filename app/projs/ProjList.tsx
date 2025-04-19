@@ -117,7 +117,12 @@ export default function ProjList() {
         (!userId || proj.user === userId || permission === "all" || roles?.includes("Admin"))
     );
   }, [projs, searchParams, permission ,userId , roles]);
-  
+
+  const serviceAccList: { [key: number]: number } = {}
+  for (const { serviceAcc, size } of projs) {
+    serviceAccList[serviceAcc] = (serviceAccList[serviceAcc] || 0) + size;
+  }
+
   return (
     
     <>
@@ -133,6 +138,10 @@ export default function ProjList() {
               {permissionsPage.map((perm , i)=>(
                   <li key={i} className="text-gray-400">{"- "+ perm.slice(0,10) + (perm.length > 9 ? "..." : "") + " (" +  projs.reduce((sum ,curr) => curr?.group === perm ? sum+1 : sum ,0)+")"}</li>
                 ))}
+              <li className="font-semibold">Service Acc (GB)</li>
+              {serviceAccInfo.map((_,  i) => 
+                <li key={i} className="text-sm">{i + " : " + (serviceAccList[Number(i)] ? (serviceAccList[Number(i)] / (1024**3)).toFixed(2) + " / 14.5 " : "Not in use")}</li>
+              )}
             </ul>
         </div>
         
