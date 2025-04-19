@@ -137,10 +137,10 @@ export default function ProjList() {
         </div>
         
       </div>
-      <div className="flex flex-rol space-x-2 justify-items-center">
+      <div className="flex flex-rol space-x-5 justify-items-center">
         <select
           onChange={(e)=>router.push(e.target.value)}
-          className="m-1.5 p-0.5"
+          className="m-1.5 p-1.5 bg-gray-300 rounded-2xl hover:scale-110 transition-all delay-150 hover:bg-gray-700 focus:bg-gray-700 shadow-2xs shadow-black"
         >
           <option value="/projs">All</option>
           {groupArr.map((val ,i) => <option value={`?t=${val}`} className="bg-transparent" key={i.toString()}>{val}</option>)}
