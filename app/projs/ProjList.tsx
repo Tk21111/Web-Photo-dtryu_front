@@ -143,7 +143,7 @@ export default function ProjList() {
           className="m-1.5 p-0.5"
         >
           <option value="/projs">All</option>
-          {groupArr.map((val ,i) => <option value={`?t=${val}`} className="bg-transparent" id={i.toString()}>{val}</option>)}
+          {groupArr.map((val ,i) => <option value={`?t=${val}`} className="bg-transparent" key={i.toString()}>{val}</option>)}
         </select>
         {search && <button className="btn btn-ghost hover:bg-gray-600" onClick={()=> router.push(`/projs?t=${projs[0]?.group}`)} disabled={!permissionsPage}>GO TO {projs[0]?.group}</button>}
         {searchType && 
