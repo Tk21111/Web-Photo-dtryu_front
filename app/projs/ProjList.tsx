@@ -31,6 +31,7 @@ export default function ProjList() {
   const [projs, setProjs] = useState<Proj[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [permissionsPage , setPermissionsPage] = useState<string[]>([]);
+  const [groupArr , setGroupArr] = useState<string[]>([]);
 
   const [copy , setCopy] = useState<boolean>(false);
 
@@ -63,6 +64,8 @@ export default function ProjList() {
     }
   };
 
+  
+
   useEffect(() => {
     fetchProjects(); // Initial fetch
 
@@ -92,7 +95,18 @@ export default function ProjList() {
     localStorage.setItem("permissions", newPermissons.join(","));
 
     setPermissionsPage(newPermissons);
-    
+
+
+    projs.forEach((proj) => {
+      
+      if (proj.group && (roles?.includes("Admin") || roles?.includes("User") || newPermissons.includes(proj.group) || !proj.lock) && !groupArr.includes(proj.group)) {
+        //console.log(proj.group)
+        setGroupArr([...groupArr , proj.group])
+      }
+    });
+
+    console.log(groupArr)
+
 
     return projs.filter(
       (proj) =>     
@@ -100,17 +114,15 @@ export default function ProjList() {
         ((!userId ? proj.lock ? newPermissons?.includes(proj.group || "") : true || proj.public  : true) || proj.group === undefined || proj.group === null || proj.group === ""|| permission === "all") &&
         (!searchType || proj.group === searchType) &&
         //when login see only your's projs overwrite when all
-        (!userId || proj.user === userId || permission === "all" || roles?.includes("Admin")) 
-        
-
+        (!userId || proj.user === userId || permission === "all" || roles?.includes("Admin"))
     );
   }, [projs, searchParams, permission ,userId , roles]);
-
+  
   return (
     
     <>
       <div className="flex flex-row justify-between">
-        <h2 className="justify-center text-3xl font-bold my-2">All Projects</h2>
+        <h2 className="justify-center text-3xl font-bold my-2">{search || "All " + searchType || "All Projects"}</h2>
         <div className="dropdown dropdown-left">
             <div tabIndex={0} role="button" className="btn m-1 bg-gray-300 border-gray-400 hover:bg-gray-600 hover:border-gray-700 hover:scale-110 transition-all duration-300 focus:bg-gray-700">Setting</div>
             <ul tabIndex={0} className="dropdown-content menu-sm bg-base-100 rounded-box z-1 w-30 p-2 shadow-sm">
@@ -126,7 +138,14 @@ export default function ProjList() {
         
       </div>
       <div className="flex flex-rol space-x-2 justify-items-center">
-        <button className="btn btn-ghost" onClick={()=> router.push("/projs")} disabled={!permissionsPage}>GO TO ALL</button>
+        <select
+          onChange={(e)=>router.push(e.target.value)}
+          className="m-1.5 p-0.5"
+        >
+          <option value="/projs">All</option>
+          {groupArr.map((val) => <option value={`?t=${val}`} className="bg-transparent">{val}</option>)}
+        </select>
+        {search && <button className="btn btn-ghost hover:bg-gray-600" onClick={()=> router.push(`/projs?t=${projs[0]?.group}`)} disabled={!permissionsPage}>GO TO {projs[0]?.group}</button>}
         {searchType && 
           <button 
           className="btn btn-dash p-2 hover:bg-blue-700 transition-all duration-200 hover:scale-110"
