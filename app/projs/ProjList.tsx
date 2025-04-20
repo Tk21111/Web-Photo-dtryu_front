@@ -240,6 +240,9 @@ export default function ProjList() {
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 rounded-box shadow-md py-20 transition delay-150 duration-300 ease-in-out">
       {Object.keys(filteredProjs).length > 0 ? (
+        oldest ? Object.keys(filteredProjs).reverse().map((key) => (
+          <TimeGroup projs={filteredProjs[key]} i={key} key={key}/>
+        )) :
         Object.keys(filteredProjs).map((key) => (
           <TimeGroup projs={filteredProjs[key]} i={key} key={key}/>
         ))
