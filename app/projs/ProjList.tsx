@@ -7,6 +7,7 @@ import List from "../components/List";
 import { useSelector } from "react-redux";
 import { selectRoles, selectUserId } from "../api/redux/authSlice";
 import { serviceAccInfo } from "../utils/serviceAccConvertong";
+import TimeGroup from "../components/TimeGroup";
 
 
 type Proj = {
@@ -29,6 +30,7 @@ const socket = io();
 
 export default function ProjList() {
   const [projs, setProjs] = useState<Proj[]>([]);
+
   const [error, setError] = useState<string | null>(null);
   const [permissionsPage , setPermissionsPage] = useState<string[]>([]);
   const [groupArr , setGroupArr] = useState<string[]>([]);
@@ -56,6 +58,11 @@ export default function ProjList() {
 
       let data: Proj[] = await res.json();
       data = data.sort((a, b) => Date.parse(b.originalTime) - Date.parse(a.originalTime));
+      console.log(data)
+      //date rendeing
+
+    
+
       setProjs(data);
       setError(null);
     } catch (err) {
@@ -96,7 +103,7 @@ export default function ProjList() {
 
     setPermissionsPage(newPermissons);
 
-
+    //group selector
     projs.forEach((proj) => {
       
       if (proj.group && (roles?.includes("Admin") || roles?.includes("User") || newPermissons.includes(proj.group) || !proj.lock) && !groupArr.includes(proj.group)) {
@@ -105,10 +112,9 @@ export default function ProjList() {
       }
     });
 
-    console.log(groupArr)
-
-
-    return projs.filter(
+    
+    //filter projs
+    const projsTmp=  projs.filter(
       (proj) =>     
         (!search || proj._id.includes(search)) &&
         ((!userId ? proj.lock ? newPermissons?.includes(proj.group || "") : true || proj.public  : true) || proj.group === undefined || proj.group === null || proj.group === ""|| permission === "all") &&
@@ -116,7 +122,46 @@ export default function ProjList() {
         //when login see only your's projs overwrite when all
         (!userId || proj.user === userId || permission === "all" || roles?.includes("Admin"))
     );
+
+    let dateL = Date.parse("2023-03-01T00:00:00.000Z");
+
+ 
+    const formatProjs : { [key : string ] : Proj[] | null } = {};
+    const formatDateLR = [["0 Long Break" , 2] , ["1 Semester 1" , 5 ] , ["2 Short Break" , 1] , ["3 Semester 2" , 4]];
+    const formatM = ["M4","M5","M6"]
+
+    let index = 0
+    let indexM = 0    
+    while (indexM !== 3) {
+ 
+      formatProjs[formatM[indexM] + " " + formatDateLR[index][0]] = projsTmp.filter(
+        (proj) => {
+          const dateCopy = new Date(dateL);
+          dateCopy.setMonth(dateCopy.getMonth() + Number(formatDateLR[index][1]));
+          return (Date.parse(proj.originalTime) > dateL) && (Date.parse(proj.originalTime) < Date.parse(dateCopy.toString())) 
+        }
+          
+      )
+    
+      if(formatProjs[formatM[indexM] + " " + formatDateLR[index][0]]?.length === 0){
+        delete formatProjs[formatM[indexM] + " " + formatDateLR[index][0]]
+      }
+
+      const dateCopy = new Date(dateL);
+      dateCopy.setMonth(dateCopy.getMonth() + Number(formatDateLR[index][1]));
+      dateL = Date.parse(dateCopy.toString());
+      
+      index++;
+      if(index === formatDateLR.length){
+        index = 0;
+        indexM++;
+      }
+    }
+
+    return (formatProjs)
+
   }, [projs, searchParams, permission ,userId , roles]);
+
 
   const serviceAccList: { [key: number]: number } = {}
   for (const { serviceAcc, size } of projs) {
@@ -165,15 +210,17 @@ export default function ProjList() {
           >{copy ? "copied to clipboard!!" : "share group"}</button>
         }
       </div>
-      
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 rounded-box shadow-md py-20 transition delay-150 duration-300 ease-in-out">
-      {filteredProjs.length > 0 ? (
-        filteredProjs.map((proj) => <List key={proj._id} proj={proj} />)
+      {Object.keys(filteredProjs).length > 0 ? (
+        Object.keys(filteredProjs).map((key) => (
+          <TimeGroup projs={filteredProjs[key]} i={key} key={key}/>
+        ))
       ) : (
         <p>No projects found.</p>
       )}
       {error && <p>{error}</p>}
-    </div>
+      </div>
+
     </>
     
   );
