@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import io from "socket.io-client";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import List from "../components/List";
+
 import { useSelector } from "react-redux";
 import { selectRoles, selectUserId } from "../api/redux/authSlice";
 import { serviceAccInfo } from "../utils/serviceAccConvertong";
@@ -36,6 +36,8 @@ export default function ProjList() {
   const [groupArr , setGroupArr] = useState<string[]>([]);
 
   const [copy , setCopy] = useState<boolean>(false);
+
+  const [oldest , setOldest] = useState<number>(0);
 
   const path = usePathname();
 
@@ -114,7 +116,7 @@ export default function ProjList() {
 
     
     //filter projs
-    const projsTmp=  projs.filter(
+    let projsTmp=  projs.filter(
       (proj) =>     
         (!search || proj._id.includes(search)) &&
         ((!userId ? proj.lock ? newPermissons?.includes(proj.group || "") : true || proj.public  : true) || proj.group === undefined || proj.group === null || proj.group === ""|| permission === "all") &&
@@ -125,6 +127,11 @@ export default function ProjList() {
 
     let dateL = Date.parse("2023-03-01T00:00:00.000Z");
 
+    //change oldest to newest
+    if(oldest){
+      projsTmp = projsTmp.sort((a,b) => Date.parse(a.originalTime) - Date.parse(b.originalTime))
+    }
+   
  
     const formatProjs : { [key : string ] : Proj[] | null } = {};
     const formatDateLR = [["0 Long Break" , 2] , ["1 Semester 1" , 5 ] , ["2 Short Break" , 1] , ["3 Semester 2" , 4]];
@@ -133,20 +140,31 @@ export default function ProjList() {
     let index = 0
     let indexM = 0    
     while (indexM !== 3) {
- 
+      const prio : Proj[] = []
       formatProjs[formatM[indexM] + " " + formatDateLR[index][0]] = projsTmp.filter(
         (proj) => {
           const dateCopy = new Date(dateL);
           dateCopy.setMonth(dateCopy.getMonth() + Number(formatDateLR[index][1]));
+          if(((Date.parse(proj.timeReqFullfill) +1000*60*60*24) > Date.now()) && (Date.parse(proj.originalTime) > dateL) && (Date.parse(proj.originalTime) < Date.parse(dateCopy.toString()))){
+            prio.push(proj)
+          }
           return (Date.parse(proj.originalTime) > dateL) && (Date.parse(proj.originalTime) < Date.parse(dateCopy.toString())) 
         }
           
       )
     
+      //remove none timeGroup prevent rendering
       if(formatProjs[formatM[indexM] + " " + formatDateLR[index][0]]?.length === 0){
         delete formatProjs[formatM[indexM] + " " + formatDateLR[index][0]]
       }
 
+      //insert ptio list front 
+      if(formatProjs[formatM[indexM] + " " + formatDateLR[index][0]] && prio.length > 0){
+        const Tmp = formatProjs[formatM[indexM] + " " + formatDateLR[index][0]]?.filter(val => !prio.includes(val))
+        formatProjs[formatM[indexM] + " " + formatDateLR[index][0]] = [...prio , ...(Tmp ?? [])];
+      }
+
+      //prep next loop
       const dateCopy = new Date(dateL);
       dateCopy.setMonth(dateCopy.getMonth() + Number(formatDateLR[index][1]));
       dateL = Date.parse(dateCopy.toString());
@@ -160,7 +178,7 @@ export default function ProjList() {
 
     return (formatProjs)
 
-  }, [projs, searchParams, permission ,userId , roles]);
+  }, [projs, searchParams, permission ,userId , roles , oldest]);
 
 
   const serviceAccList: { [key: number]: number } = {}
@@ -172,7 +190,23 @@ export default function ProjList() {
     
     <>
       <div className="flex flex-row justify-between">
-        <h2 className="justify-center text-3xl font-bold my-2">{search || "All " + searchType || "All Projects"}</h2>
+        <div className="flex flex-row">
+          <select
+          onChange={(e)=>router.push(e.target.value)}
+          className="m-1.5 p-2 mt-[6.5%] border-1 text-xl rounded-3xl hover:scale-110 transition-all delay-150 hover:bg-gray-700 focus:bg-gray-700 shadow-2xs shadow-black h-fit"
+        >
+          <option value="/projs" className="text-lg">All</option>
+          {groupArr.map((val ,i) => <option value={`?t=${val}`} className="bg-transparent text-lg" key={i.toString()}>{val}</option>)}
+        </select>
+        <select
+          className="hover:bg-gray-700 focus:bg-gray-700 shadow-2xs shadow-black duration-150 h-fit mt-[10.7%] rounded-3xl p-1.5 border-1"
+          onChange={(e)=> {e.preventDefault(); setOldest(Number(e.target.value))}}
+        >
+          <option value={0}>Newest</option>
+          <option value={1}>Oldest</option>
+        </select>
+        </div>
+        
         <div className="dropdown dropdown-left">
             <div tabIndex={0} role="button" className="btn m-1 bg-gray-300 border-gray-400 hover:bg-gray-600 hover:border-gray-700 hover:scale-110 transition-all duration-300 focus:bg-gray-700">Setting</div>
             <ul tabIndex={0} className="dropdown-content menu-sm bg-base-100 rounded-box z-1 w-30 p-2 shadow-sm">
@@ -191,14 +225,8 @@ export default function ProjList() {
         </div>
         
       </div>
-      <div className="flex flex-rol space-x-5 justify-items-center">
-        <select
-          onChange={(e)=>router.push(e.target.value)}
-          className="m-1.5 p-1.5 bg-gray-300 rounded-2xl hover:scale-110 transition-all delay-150 hover:bg-gray-700 focus:bg-gray-700 shadow-2xs shadow-black"
-        >
-          <option value="/projs">All</option>
-          {groupArr.map((val ,i) => <option value={`?t=${val}`} className="bg-transparent" key={i.toString()}>{val}</option>)}
-        </select>
+      <div className="flex flex-rol space-x-5 justify-items-center ml-3">
+        
         {search && <button className="btn btn-ghost hover:bg-gray-600" onClick={()=> router.push(`/projs?t=${projs[0]?.group}`)} disabled={!permissionsPage}>GO TO {projs[0]?.group}</button>}
         {searchType && 
           <button 

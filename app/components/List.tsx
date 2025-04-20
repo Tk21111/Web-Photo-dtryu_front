@@ -35,6 +35,8 @@ export default function List({ proj }: { proj: Proj }) {
 
   const [copy , setCopy] = useState<boolean>(false);
   const handleSubmit = async (e: React.MouseEvent) => {
+
+    e.stopPropagation();
     e.preventDefault();
 
     if (!proj._id || !["pre-upload", "resting"].includes(proj.status) || click) return;
@@ -68,6 +70,7 @@ export default function List({ proj }: { proj: Proj }) {
 
   const handleDelProjDrive = async (e : React.MouseEvent) => {
 
+    e.stopPropagation()
     e.preventDefault();
 
     if(!proj._id) return null
@@ -111,7 +114,7 @@ export default function List({ proj }: { proj: Proj }) {
         
 
       
-      <div className="flex flex-row justify-between items-center p-2" onClickCapture={() => setIsOpen(!isOpen)}>
+      <div className="flex flex-row justify-between items-center p-2" onClickCapture={(e : React.MouseEvent) =>{ e.stopPropagation(); setIsOpen(!isOpen);}}>
         <div className="flew flex-col space-y-1">
           <div className="text-xl text-white uppercase font-semibold ">
             {proj.name + " " + (proj.originalTime?.split("T")[0] || '')}
@@ -179,7 +182,7 @@ export default function List({ proj }: { proj: Proj }) {
                border-emerald-700 shadow-lg 
                hover:bg-pink-500 hover:border-red-600 
                hover:text-white hover:scale-110 hover:shadow-2xl"
-
+              onClick={(e)=> e.stopPropagation()}
                target="_blank" //open link in new tab
               >
                 
@@ -207,7 +210,8 @@ export default function List({ proj }: { proj: Proj }) {
           {proj.group && <p className="text-sm">Group: {proj.group}</p>}
           <button 
           className="btn btn-dash my-2 p-2 hover:bg-blue-700 transition-all duration-200 hover:scale-110"
-          onClick={()=> {
+          onClick={(e)=> {
+            e.stopPropagation()
             navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_HOST}/${path}?q=${proj._id}${(proj.lock && proj.group? "&type="+proj.group : "")}`); 
             setCopy(true); 
             setTimeout(() => setCopy(false), 5000);}}
