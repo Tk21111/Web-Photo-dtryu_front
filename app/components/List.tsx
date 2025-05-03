@@ -114,7 +114,7 @@ export default function List({ proj }: { proj: Proj }) {
         
 
       
-      <div className="flex flex-row justify-between items-center p-2" onClickCapture={(e : React.MouseEvent) =>{ e.stopPropagation(); setIsOpen(!isOpen);}}>
+      <div className="flex flex-row justify-between items-center p-2" onClickCapture={(e : React.MouseEvent) =>{ /*e.stopPropagation();*/ setIsOpen(!isOpen);}}>
         <div className="flew flex-col space-y-1">
           <div className="text-xl text-white uppercase font-semibold ">
             {proj.name + " " + (proj.originalTime?.split("T")[0] || '')}
