@@ -45,6 +45,7 @@ export default function ProjList() {
   const search = searchParams.get("q") || "";
   const permission = searchParams.get("type") || "";
   const searchType = searchParams.get("t") || ""; 
+  const searchUser = searchParams.get("user") || ""; 
 
   const router = useRouter()
 
@@ -58,7 +59,9 @@ export default function ProjList() {
 
       if (!res.ok) throw new Error(`Failed to fetch data: ${res.status}`);
 
+      
       let data: Proj[] = await res.json();
+
       data = data.sort((a, b) => Date.parse(b.originalTime) - Date.parse(a.originalTime));
       console.log(data)
       //date rendeing
@@ -122,7 +125,9 @@ export default function ProjList() {
         ((!userId ? proj.lock ? newPermissons?.includes(proj.group || "") : true || proj.public  : true) || proj.group === undefined || proj.group === null || proj.group === ""|| permission === "all") &&
         (!searchType || proj.group === searchType) &&
         //when login see only your's projs overwrite when all
-        (!userId || proj.user === userId || permission === "all" || roles?.includes("Admin"))
+        (!userId || proj.user === userId || permission === "all" || roles?.includes("Admin")) //&&
+        //user 
+        // (roles?.includes("Admin") || (searchUser ? proj.user == searchUser : true))
     );
 
     let dateL = Date.parse("2023-03-01T00:00:00.000Z");
@@ -232,7 +237,7 @@ export default function ProjList() {
           <button 
           className="btn btn-dash p-2 hover:bg-blue-700 transition-all duration-200 hover:scale-110"
           onClick={()=> {
-            navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_HOST}/${path}?${permissionsPage.includes(searchType) || roles?.includes("User") || roles?.includes("Admin")  ? `type=${searchType}&` : ""}t=${searchType}`); 
+            navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_HOST}/${path}?${permissionsPage.includes(searchType) || roles?.includes("User") || roles?.includes("Admin")  ? `type=${searchType}&` : ""}t=${searchType}${ searchUser ? `&user=${searchUser}` : ""}`); 
             setCopy(true); 
             setTimeout(() => setCopy(false), 5000);}}
           >{copy ? "copied to clipboard!!" : "share group"}</button>
