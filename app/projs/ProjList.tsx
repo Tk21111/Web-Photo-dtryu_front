@@ -125,9 +125,9 @@ export default function ProjList() {
         ((!userId ? proj.lock ? newPermissons?.includes(proj.group || "") : true || proj.public  : true) || proj.group === undefined || proj.group === null || proj.group === ""|| permission === "all") &&
         (!searchType || proj.group === searchType) &&
         //when login see only your's projs overwrite when all
-        (!userId || proj.user === userId || permission === "all" || roles?.includes("Admin")) //&&
+        (!userId || proj.user === userId || permission === "all" || roles?.includes("Admin")) &&
         //user 
-        // (roles?.includes("Admin") || (searchUser ? proj.user == searchUser : true))
+        (roles?.includes("Admin") || (searchUser ? proj.user == searchUser : true))
     );
 
     let dateL = Date.parse("2023-03-01T00:00:00.000Z");
