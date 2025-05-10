@@ -194,7 +194,7 @@ export default function ProjList() {
     }
 
     
-    console.log(projsTmp);
+
     return (formatProjs)
 
   }, [projs, searchParams, permission ,userId , roles , oldest]);
