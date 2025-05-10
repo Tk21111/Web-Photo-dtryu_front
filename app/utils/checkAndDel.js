@@ -2,13 +2,15 @@ import Drive from "../model/Drive";
 import UploadTicket from "../model/UploadTicket";
 import serviceAccSelector from "./serviceAccSelector";
 
-async function checkAndDel() {
+async function checkAndDel(delParent) {
     try {
         // Find all upload tickets that match the status
         const now = Date.now();
-        const req = await UploadTicket.find({
+        const req = delParent ? await UploadTicket.find({
             $or: [{ status: 'awaitDelt' }, { status: 'upload fail' } , {status : 'delt fail'}]
-        }).populate('del');   
+        }).populate('del') : await UploadTicket.find({status : "update"}).populate('del');
+        
+        console.log(req)
 
         // Delete upload tickets with `del: null` and `upload: null`
         await UploadTicket.deleteMany({ del: null, upload: null });
@@ -16,10 +18,10 @@ async function checkAndDel() {
         // Filter expired tickets where `del` is not null
         const folder = req.filter(val => val.dateDue <= now && val.del !== null);
 
-        async function delInGgDrive(parentProjFolder, serviceAcc) {
+        async function delInGgDrive(parentProjFolder, serviceAcc , delParent = true) {
             if (!serviceAcc) {
                 console.error("Service account is undefined!");
-                return "Delt fail"; // Added return here
+                return "Delt fail"; 
             }
 
             const drive = serviceAcc;
@@ -42,8 +44,10 @@ async function checkAndDel() {
                 }
 
                 // Delete the parent folder after all contents are deleted
-                await drive.files.delete({ fileId: parentProjFolder });
-                console.log("Deleted parent folder: " + parentProjFolder);
+                if(delParent){
+                    await drive.files.delete({ fileId: parentProjFolder });
+                    console.log("Deleted parent folder: " + parentProjFolder);
+                }
 
             } catch (err) {
                 console.error("Error deleting from Google Drive: ", err);
@@ -79,7 +83,7 @@ async function checkAndDel() {
                             continue;
                         }
 
-                        await delInGgDrive(parentFolder, serviceAcc);
+                        await delInGgDrive(parentFolder, serviceAcc , delParent);
                         console.log("Deleted project folder successfully");
                     } catch (err) {
                         await Drive.findByIdAndUpdate(proj._id, { status: "delt fail" });
@@ -90,7 +94,14 @@ async function checkAndDel() {
 
                     // Update project status to "resting"
                     try {
-                        await Drive.findByIdAndUpdate(proj._id, { status: "resting", locationOnDrive: null }, { new: true });
+                        await Drive.findByIdAndUpdate(
+                            proj._id,
+                            {
+                                ...(delParent ? {status: "resting" } : { status : "updating"}),
+                                ...(delParent ? { locationOnDrive: null } : {})
+                            }
+                        );
+
                     } catch (err) {
                         await Drive.findByIdAndUpdate(proj._id, { status: "delt fail" });
                         await UploadTicket.findByIdAndUpdate(uploadTicket._id, { status: "delt fail" });
@@ -101,7 +112,7 @@ async function checkAndDel() {
 
                 // Update UploadTicket `del` to null after deletion
                 try {
-                    await UploadTicket.findByIdAndUpdate(uploadTicket._id, { del: null, status: "awaitUpload" }, { new: true });
+                    await UploadTicket.findByIdAndUpdate(uploadTicket._id, { del: null, status: "awaitUpload" });
                 } catch (err) {
                     await Drive.findByIdAndUpdate(proj._id, { status: "delt fail" });
                     await UploadTicket.findByIdAndUpdate(uploadTicket._id, { status: "delt fail" });

@@ -92,6 +92,53 @@ export default function List({ proj }: { proj: Proj }) {
       }
   }
 
+  const handleUpdateProjDrive = async (e : React.MouseEvent) => {
+
+    e.stopPropagation()
+    e.preventDefault();
+
+    if(!proj._id) return null
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_HOST}/api/proj/edit` ,{
+        method : "PATCH",
+        body : JSON.stringify({projId : proj._id}),
+        headers : {
+          "Content-Type": "application/json",
+          authorization : `Bearer ${accessToken}`
+        },
+        cache : 'reload'
+      })
+
+      const resMsg = await res.json();
+      console.log(resMsg); 
+      } catch (err) {
+        console.error("Error in request:", err);
+      }
+  }
+  const handleLockProjDrive = async (e : React.MouseEvent) => {
+
+    e.stopPropagation()
+    e.preventDefault();
+
+    if(!proj._id) return null
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_HOST}/api/proj/edit` ,{
+        method : "POST",
+        body : JSON.stringify({projId : proj._id}),
+        headers : {
+          "Content-Type": "application/json",
+          authorization : `Bearer ${accessToken}`
+        },
+        cache : 'reload'
+      })
+
+      const resMsg = await res.json();
+      console.log(resMsg); 
+      } catch (err) {
+        console.error("Error in request:", err);
+      }
+  }
+
   useEffect(() => {
     setService(serviceAccConverter(proj.serviceAcc))
     if(proj.status === "uploading"){
@@ -106,7 +153,7 @@ export default function List({ proj }: { proj: Proj }) {
   return (
     <div className={`w-full h-fit pl-2 py-1 border-2 rounded-2xl shadow-2xl bg-accent-content transition-all duration-500 ease-in-out
       ${isOpen && "h-full"}
-      ${proj.status === "uploading" || click ? "bg-orange-300 text-orange-800 animate-pulse" : ""}
+      ${proj.status === "uploading" || proj.status === "updating" || click ? "bg-orange-300 text-orange-800 animate-pulse" : ""}
       ${proj.status === "onDrive" ? " text-white" : ""} 
       ${proj.status === "deleting" ? "bg-orange-200 blur-2xl shadow-lg" : ""} 
       ${reqFail ? "bg-red-200 shadow-lg animate-none" : ""} 
@@ -114,7 +161,7 @@ export default function List({ proj }: { proj: Proj }) {
         
 
       
-      <div className="flex flex-row justify-between items-center p-2" onClickCapture={(/*e : React.MouseEvent*/) =>{ /*e.stopPropagation();*/ setIsOpen(!isOpen);}}>
+      <div className="flex flex-row justify-between items-center p-2" onClick={(e : React.MouseEvent) =>{ e.stopPropagation(); e.preventDefault(); setIsOpen(!isOpen);}}>
         <div className="flew flex-col space-y-1">
           <div className="text-xl text-white uppercase font-semibold ">
             {proj.name + " " + (proj.originalTime?.split("T")[0] || '')}
@@ -149,12 +196,36 @@ export default function List({ proj }: { proj: Proj }) {
             ) }
             {
               (roles?.includes("Admin") || proj.user === userId  ) && (
-                <button
-                className="border-2 rounded-lg px-2 py-0.5 bg-red-600 "
-                onClick={handleDelProjDrive}
-              >
-                del
-              </button> 
+                
+                    <button
+                  className="border-2 rounded-lg px-2 py-0.5 bg-red-600 "
+                  onClick={handleDelProjDrive}
+                >
+                  del
+                </button>
+              )
+              
+            }
+            {
+              (roles?.includes("Admin") || proj.user === userId  ) && (
+                
+                    <button
+                  className="border-2 rounded-lg px-2 py-0.5 bg-blue-600 "
+                  onClick={handleUpdateProjDrive}
+                >
+                  update
+                </button>
+              )
+            }
+            {
+              (roles?.includes("Admin") || proj.user === userId  ) && (
+                
+                  <button
+                  className="border-2 rounded-lg px-2 py-0.5 bg-blue-600 "
+                  onClick={handleLockProjDrive}
+                >
+                  {proj.lock ? "unlock" : "lock"}
+                </button>
               )
             }
           </div>

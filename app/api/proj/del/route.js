@@ -19,7 +19,7 @@ export async function PATCH(req) {
                 status : "awaitDelt"
             });
     
-            await checkAndDel();
+            await checkAndDel(true);
 
             return NextResponse.json({ status : 201});
 

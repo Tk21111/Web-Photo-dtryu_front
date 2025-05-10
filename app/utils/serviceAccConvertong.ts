@@ -9,8 +9,9 @@ const serviceAccInfo = [
     ["Colorful cat" , "bg-black" , ColorCat],
     ["Ri " , "bg-red-400" , Rawi],
     ["Tk" , "bg-blue-400" , Tk],
-    ["I June" , "bg-pink-400" ,""],
-    ["I junki" , "bg-orange-400" , ""],
+    ["gussy" , "bg-pink-400" ,""],
+    ["I June" , "bg-orange-400" , ""],
+    ["I Jun" , "bg-orange-400" , ""],
 ]
 
 export default function serviceAccConverter(serviceAccId : number) {

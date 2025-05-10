@@ -141,7 +141,7 @@ export async function PATCH(req) {
 
             schedule.scheduleJob(new Date(Date.now() + 1000*60*60*15) , () => { 
                 console.log("schedule... : " , i , " ")
-                const result = checkAndDel()
+                const result = checkAndDel(true)
                 if(result === "Delt fail"){
                     scheduleFail(i)
                 } else {
@@ -155,7 +155,7 @@ export async function PATCH(req) {
 
         schedule.scheduleJob(new Date(obj.dateDue) , ()=> {
             console.log("schedule..")
-            const result = checkAndDel()
+            const result = checkAndDel(true)
             console.log(result === "Delt fail" ? scheduleFail(0) : "Delt successs at " + new Date())
         })
 

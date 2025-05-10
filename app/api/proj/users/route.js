@@ -1,10 +1,15 @@
 import Drive from "../../../model/Drive";
+import User from "../../../model/User";
 import UploadTicket from "../../../model/UploadTicket";
 import checkAndDel from "../../../utils/checkAndDel";
+
+import { connectToDatabase } from "@/app/lib/mongodb";
 
 //fail
 //@uploadFail
 export async function PATCH(req) {
+    
+    await connectToDatabase();
 
     try {
         const {projId , uploadTicketId} = req.body;
@@ -14,7 +19,7 @@ export async function PATCH(req) {
         const uploadTicket = await UploadTicket.findByIdAndUpdate(uploadTicketId , {status : "upload fail" , del : projId});
         if(!proj || !uploadTicket) return Response.json({status : 404});
 
-        checkAndDel()
+        checkAndDel(true)
 
         return Response.json({status : 200}); 
     } catch (err) {
@@ -25,10 +30,25 @@ export async function PATCH(req) {
 
 //get upload req
 //@uploadticket GET
-export async function GET() {
+export async function POST(req) {
+
+        
+    await connectToDatabase();
+
     try {
        
-        const uploadReq = await UploadTicket.find({ del: null , status : "awaitUpload"}).populate("upload");   
+        const { user } = await req.json();
+        let uploadReq = await UploadTicket.find({ del: null , $or : [ {status : "awaitUpload"} , {status : "update"}]}).populate("upload");
+        const userData = await User.findOne({username : user }).exec();
+        
+        console.log(uploadReq[0].upload.user)
+        console.log(userData)
+        uploadReq = uploadReq.filter(ticket => {
+        return ticket.upload.user && ticket.upload.user.equals(userData._id);
+        });
+
+        console.log(uploadReq)
+
         
         return Response.json(uploadReq)
     } catch (err){
