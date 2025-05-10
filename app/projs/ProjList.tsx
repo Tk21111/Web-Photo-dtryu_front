@@ -63,7 +63,7 @@ export default function ProjList() {
       let data: Proj[] = await res.json();
 
       data = data.sort((a, b) => Date.parse(b.originalTime) - Date.parse(a.originalTime));
-      console.log(data)
+      
       //date rendeing
 
     
