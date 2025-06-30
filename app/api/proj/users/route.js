@@ -38,16 +38,14 @@ export async function POST(req) {
     try {
        
         const { user } = await req.json();
-        let uploadReq = await UploadTicket.find({ del: null , $or : [ {status : "awaitUpload"} , {status : "update"}]}).populate("upload");
+        let uploadReq = await UploadTicket.find({ del: null ,  upload: { $ne: null } , $or : [ {status : "awaitUpload"} , {status : "update"}]}).populate("upload");
         const userData = await User.findOne({username : user }).exec();
         
-        console.log(uploadReq[0].upload.user)
-        console.log(userData)
         uploadReq = uploadReq.filter(ticket => {
-        return ticket.upload.user && ticket.upload.user.equals(userData._id);
+            return ticket.upload.user && ticket.upload.user.equals(userData._id);
         });
 
-        console.log(uploadReq)
+
 
         
         return Response.json(uploadReq)
