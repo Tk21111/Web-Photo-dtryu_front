@@ -27,7 +27,7 @@ async function checkAndDel(delParent) {
             const drive = serviceAcc;
             try {
                 const { data } = await drive.files.list({
-                    q: `'${parentProjFolder}' in parents`,
+                    q: `'${parentProjFolder}' in parents and 'me' in owners`,
                     fields: 'files(id, name, mimeType)',
                 });
 
