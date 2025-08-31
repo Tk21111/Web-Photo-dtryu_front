@@ -7,6 +7,8 @@ import serviceAccConverter from "../utils/serviceAccConvertong";
 import Image, { StaticImageData } from "next/image";
 import { usePathname } from "next/navigation";
 
+import UserImage from "./User.png";
+
 type Proj = {
   _id: string;
   name: string;
@@ -167,7 +169,7 @@ export default function List({ proj }: { proj: Proj }) {
             {proj.name + " " + (proj.originalTime?.split("T")[0] || '')}
           </div>
           <div className="text-sm text-white uppercase font-semibold flew flex-row my-3.5 space-y-1">
-            <Image src={service  && service[2] || ""} alt="Description of image" className="relative inline-flex size-8 rounded-full " />
+            <Image src={service  && service[2] || UserImage} alt="Description of image" className="relative inline-flex size-8 rounded-full " />
             <p>{"by " + (service && service[0])}</p>
             
           </div>
