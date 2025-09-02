@@ -238,7 +238,7 @@ export default function ProjList() {
                 ))}
               <li className="font-semibold">Service Acc (GB)</li>
               {serviceAccInfo.map((_,  i) => 
-                <li key={i} className="text-sm">{i + " : " + (serviceAccList[Number(i)] ? (serviceAccList[Number(i)] / (1024**3)).toFixed(2) + " / 14.5 " : "Not in use")}</li>
+                <li key={i} className="text-sm text-base-content">{i + " : " + (serviceAccList[Number(i)] ? (serviceAccList[Number(i)] / (1024**3)).toFixed(2) + " / 14.5 " : "Not in use")}</li>
               )}
             </ul>
         </div>
