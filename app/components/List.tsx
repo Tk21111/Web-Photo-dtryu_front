@@ -8,6 +8,7 @@ import Image, { StaticImageData } from "next/image";
 import { usePathname } from "next/navigation";
 
 import UserImage from "./User.png";
+import FaceSelect from "./FaceSelect";
 
 type Proj = {
   _id: string;
@@ -289,6 +290,7 @@ export default function List({ proj }: { proj: Proj }) {
             setCopy(true); 
             setTimeout(() => setCopy(false), 5000);}}
           >{copy ? "copied to clipboard!!" : "share"}</button>
+          { proj.locationOnDrive && <FaceSelect driveLink={proj.locationOnDrive}/>}
         </div>
       )}
 
