@@ -228,7 +228,7 @@ export default function ProjList() {
         
         <div className="dropdown dropdown-left">
             <div tabIndex={0} role="button" className="btn m-1 bg-gray-300 border-gray-400 hover:bg-gray-600 hover:border-gray-700 hover:scale-110 transition-all duration-300 focus:bg-gray-700">Setting</div>
-            <ul tabIndex={0} className="dropdown-content menu-sm bg-base-100 rounded-box z-1 w-30 p-2 shadow-sm">
+            <ul tabIndex={0} className="dropdown-content menu-sm bg-base-100 rounded-box z-1 w-30 p-2 shadow-sm text-base-content">
               <li className="font-semibold">StorageUsed</li>
               <li className="text-sm">{((projs.reduce((sum , curr) => sum + curr.size, 0)) / (1024**3)).toFixed(2) + " / " + (serviceAccInfo.length *14.5) + " GB"}</li>
               <li className="font-semibold">Allow</li>
@@ -238,7 +238,7 @@ export default function ProjList() {
                 ))}
               <li className="font-semibold">Service Acc (GB)</li>
               {serviceAccInfo.map((_,  i) => 
-                <li key={i} className="text-sm">{i + " : " + (serviceAccList[Number(i)] ? (serviceAccList[Number(i)] / (1024**3)).toFixed(2) + " / 14.5 " : "Not in use")}</li>
+                <li key={i} className="text-sm ">{i + " : " + (serviceAccList[Number(i)] ? (serviceAccList[Number(i)] / (1024**3)).toFixed(2) + " / 14.5 " : "Not in use")}</li>
               )}
             </ul>
         </div>
