@@ -196,13 +196,12 @@ export default function ProjsChild() {
             )}
 
             {/* Google Drive Iframe */}
-          
             <iframe
                 src={`https://drive.google.com/file/d/${searchData[currentIndex].id}/preview`}
                 className="w-full h-full"
                 allow="autoplay"
                 ></iframe>
-        
+                
           </div>
         </div>
       )}

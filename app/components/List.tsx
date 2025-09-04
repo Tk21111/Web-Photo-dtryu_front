@@ -290,7 +290,7 @@ export default function List({ proj }: { proj: Proj }) {
             setCopy(true); 
             setTimeout(() => setCopy(false), 5000);}}
           >{copy ? "copied to clipboard!!" : "share"}</button>
-          { proj.locationOnDrive && <FaceSelect id={proj._id} driveId={null} tag={null}/>}
+          { proj.locationOnDrive && <FaceSelect id={proj._id} driveId={undefined} />}
         </div>
       )}
 
