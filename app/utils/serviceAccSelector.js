@@ -35,6 +35,7 @@ const serviceAccSelector = (serviceAccId) => {
 
   // Initialize the Drive API client
   const drive = google.drive({ version: 'v3', auth });
+  console.log('Service account email:', drive._options?.auth?.client_email);
 
   return drive;
 };
