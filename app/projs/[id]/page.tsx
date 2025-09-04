@@ -1,6 +1,7 @@
 "use client";
 import FaceSelect from "@/app/components/FaceSelect";
 import List from "@/app/components/List";
+import { Download } from "lucide-react";
 import Image from "next/image";
 import { useParams, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -159,11 +160,20 @@ export default function ProjsChild() {
           >
             {/* Close Button */}
             <button
-              className="absolute top-2 left-2 bg-white text-black px-2 py-1 rounded"
+              className="absolute top-5 left-2 bg-white text-black px-2 py-1 rounded"
               onClick={closeModal}
             >
               ✕
             </button>
+
+            <a
+                href={`https://drive.google.com/uc?export=download&id=${searchData[currentIndex].id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="absolute top-5 right-15 bg-black/50 text-white px-2 py-1 rounded hover:bg-black/70 text-sm"
+            >
+                <Download/>
+            </a>
 
             {/* Left Button */}
             {currentIndex > 0 && (
@@ -186,11 +196,13 @@ export default function ProjsChild() {
             )}
 
             {/* Google Drive Iframe */}
+          
             <iframe
-              src={`https://drive.google.com/file/d/${searchData[currentIndex].id}/preview`}
-              className="w-full h-full"
-              allow="autoplay"
-            ></iframe>
+                src={`https://drive.google.com/file/d/${searchData[currentIndex].id}/preview`}
+                className="w-full h-full"
+                allow="autoplay"
+                ></iframe>
+        
           </div>
         </div>
       )}
