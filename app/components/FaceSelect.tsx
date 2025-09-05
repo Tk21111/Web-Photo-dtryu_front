@@ -11,6 +11,7 @@ const FaceSelect = ({id , driveId} : {id : string, driveId : string | undefined}
             <a
                 href={id ? `${process.env.NEXT_PUBLIC_HOST}/projs/${id}?${driveId ? "driveId=" + driveId + "&tag=" + i : ""}` : ""}
                 className="relative rounded-full border-2 h-[50px] w-[50px] overflow-hidden"
+                key={i}
                 >
                 <Image
                     key={i}

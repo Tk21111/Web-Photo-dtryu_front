@@ -10,7 +10,6 @@ async function checkAndDel(delParent) {
             $or: [{ status: 'awaitDelt' }, { status: 'upload fail' } , {status : 'delt fail'}]
         }).populate('del') : await UploadTicket.find({status : "update"}).populate('del');
         
-        console.log(req)
 
         // Delete upload tickets with `del: null` and `upload: null`
         await UploadTicket.deleteMany({ del: null, upload: null });
@@ -27,7 +26,7 @@ async function checkAndDel(delParent) {
             const drive = serviceAcc;
             try {
                 const { data } = await drive.files.list({
-                    q: `'${parentProjFolder}' in parents and 'me' in owners`,
+                    q: `'${parentProjFolder}' in parents `,
                     fields: 'files(id, name, mimeType)',
                 });
 

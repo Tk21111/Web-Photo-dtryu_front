@@ -18,7 +18,12 @@ async function recursiveFolder(drive , driveFolder )
         if( data.files.length === 0){
             continue;
         }
-        files.push(...data.files.map(val => val.id));
+        for (const f of data.files){
+            files.push(...f.id);
+            tmp = recursiveFolder(drive , f);
+            files.push(...tmp);
+        }
+        
 
         pageToken = data.nextPageToken;
     } while (pageToken);

@@ -13,9 +13,9 @@ export async function PATCH(req){
 
         const { projId } = await req.json()
 
-        const dup = await UploadTicket.findOne({upload : projId})
+        // const dup = await UploadTicket.findOne({upload : projId})
 
-        if(dup) return NextResponse.json({status : 201})
+        // if(dup) return NextResponse.json({status : 201})
 
         await Drive.findByIdAndUpdate(projId , {
             status : "updating"

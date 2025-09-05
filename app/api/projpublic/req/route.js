@@ -2,11 +2,11 @@ import { NextResponse } from "next/server";
 import { connectToDatabase } from "../../../lib/mongodb";
 import Drive from "../../../model/Drive"
 import UploadTicket from "../../../model/UploadTicket"
-import serviceAccSelector from "../../../utils/serviceAccSelector";
 import User from "../../../model/User"
 import schedule from 'node-schedule';
 import checkAndDel from "../../../utils/checkAndDel";
 import { revalidateTag } from "next/cache";
+import { google } from "googleapis";
 
 
 
@@ -33,26 +33,35 @@ export async function PATCH(req) {
         const driveUsageCheck = async () => {
 
             async function checkStorage() {
-                for (let i = 0; i < process.env.GOOGLE_APPLICATION_CREDENTIALS; i++) {
+
+                const servicesAcc = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON)
+
+                for (const serviceAcc of servicesAcc){
+                    
                     try {
-                        const drive = serviceAccSelector(i);
-                        
+                        const auth = new google.auth.GoogleAuth({
+                            credentials: serviceAcc,
+                            scopes: ['https://www.googleapis.com/auth/drive'],
+                        });
+
+                        // Initialize the Drive API client
+                        const drive = google.drive({ version: 'v3', auth });
                         const driveUsed = await drive.about.get({ fields: 'storageQuota' });
-                        console.log(driveUsed && (driveUsed.data.storageQuota.limit - userInfo.driveBuffer) - driveUsed.data.storageQuota.usage - projectReq.size );
-                        console.log(i)
-                        // Check if there is enough storage
+
                         if (driveUsed && (driveUsed.data.storageQuota.limit - userInfo.driveBuffer) - driveUsed.data.storageQuota.usage - projectReq.size > 0) {
                             return i;  // good use this
                         } 
-            
-                    } catch (err) {
-                        console.log(err + " ; driveUsageCheck");
+                    } catch(err){
+                        console.error(err + " ; driveUsageCheck/checkStorage");
+                        continue;
                     }
+                    
                 }
             
                 return null;  // Default return if nothing matches
             }
             const haveServiceAccFree = await checkStorage();
+            console.log(haveServiceAccFree)
 
             
 
@@ -68,14 +77,14 @@ export async function PATCH(req) {
             //---------------------- find proj to del ---------------------------
             //sort by servicAcc
             let projsArr = [];
-            for (let y of projects){
+            for (let y of projects) {
+                if (!y.serviceAcc) continue; // Skip if no serviceAcc defined
 
-                if(projsArr[y.serviceAcc]){
+                if (projsArr[y.serviceAcc]) {
                     projsArr[y.serviceAcc].push(y);
                 } else {
-                    projsArr[y.serviceAcc] = [y]
+                    projsArr[y.serviceAcc] = [y];
                 }
-                
             }
 
             //filterout permanent and diffrent user and sorted by oldest

@@ -1,7 +1,6 @@
 "use client";
 import FaceSelect from "@/app/components/FaceSelect";
-import List from "@/app/components/List";
-import { ArrowDownFromLine, ArrowUpFromLine, Download, DownloadCloud, DownloadCloudIcon, DownloadIcon, LucideSidebarClose, SearchIcon, SidebarClose } from "lucide-react";
+import {  ArrowUpFromLine, Download, DownloadIcon, SearchIcon } from "lucide-react";
 import Image from "next/image";
 import { useParams, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -105,6 +104,13 @@ export default function ProjsChild() {
         }
     };
 
+    const handleDownloadAll = () => {
+      console.log(searchData)
+      searchData?.forEach((val) => {
+        window.open(`https://drive.google.com/uc?export=download&id=${val.id}`, "_blank");
+      });
+    };
+
     
     return (
     <div className="flex flex-col">
@@ -120,7 +126,10 @@ export default function ProjsChild() {
                 <button className="btn btn-block"  onClickCapture={() => setIsFaceSelectOpen(prev => !prev)}>{isFaceSelectOpen ? <ArrowUpFromLine/> : <SearchIcon/>}</button>
             </div>
         </div>
-        <div className="absolute right-5 top-5 bg-gray-800 p-2 rounded-2xl">
+        <div 
+            className="absolute right-5 top-5 bg-gray-800 p-2 rounded-2xl" 
+            onClick={handleDownloadAll}
+            >
           <DownloadIcon/>
         </div>
         <div className="flex flex-row flex-wrap gap-4 mt-[8vh] justify-between">
