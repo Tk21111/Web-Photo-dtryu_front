@@ -1,7 +1,7 @@
 "use client";
 import FaceSelect from "@/app/components/FaceSelect";
 import List from "@/app/components/List";
-import { Download } from "lucide-react";
+import { ArrowDownFromLine, ArrowUpFromLine, Download, LucideSidebarClose, SidebarClose } from "lucide-react";
 import Image from "next/image";
 import { useParams, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -108,16 +108,16 @@ export default function ProjsChild() {
     
     return (
     <div className="flex flex-col">
-        <div className="absolute flex-col z-10">
-            <div className=" relative w-fit h-fit">
+        <div className="absolute flex-col z-10 w-[95%] p-1 ">
+            {isFaceSelectOpen && <div className=" relative w-fit h-fit">
                 <div className="absolute inset-0 flex flex-col backdrop-blur-md rounded-4xl bg-gray-600/40"/>
                 <div className=" justify-center">
                     <p className="text-center">Face search</p>
                 </div>
-                { isFaceSelectOpen && <FaceSelect id={projData?._id || ""} driveId={driveId || ""}/>}
-            </div>
+                 <FaceSelect id={projData?._id || ""} driveId={driveId || ""}/>
+            </div>}
             <div className="w-1/2 translate-x-1/2">
-                <button className="btn btn-block"  onClickCapture={() => setIsFaceSelectOpen(prev => !prev)}>open</button>
+                <button className="btn btn-block"  onClickCapture={() => setIsFaceSelectOpen(prev => !prev)}>{isFaceSelectOpen ? <ArrowUpFromLine/> : <ArrowDownFromLine/>}</button>
             </div>
         </div>
 
@@ -200,7 +200,7 @@ export default function ProjsChild() {
                 src={`https://drive.google.com/file/d/${searchData[currentIndex].id}/preview`}
                 className="w-full h-full"
                 allow="autoplay"
-                ></iframe>
+            ></iframe>
                 
           </div>
         </div>

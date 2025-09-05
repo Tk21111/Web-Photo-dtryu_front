@@ -3,7 +3,6 @@ import Image from "next/image";
 
 const FaceSelect = ({id , driveId} : {id : string, driveId : string | undefined}) => {
 
-  console.log(driveId)
   return (
     <div className="flex w-full justify-center">
         <div className="flex flex-wrap  justify-center space-y-1 space-x-1">
