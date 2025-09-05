@@ -1,7 +1,7 @@
 "use client";
 import FaceSelect from "@/app/components/FaceSelect";
 import List from "@/app/components/List";
-import { ArrowDownFromLine, ArrowUpFromLine, Download, LucideSidebarClose, SidebarClose } from "lucide-react";
+import { ArrowDownFromLine, ArrowUpFromLine, Download, DownloadCloud, DownloadCloudIcon, DownloadIcon, LucideSidebarClose, SearchIcon, SidebarClose } from "lucide-react";
 import Image from "next/image";
 import { useParams, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -117,11 +117,13 @@ export default function ProjsChild() {
                  <FaceSelect id={projData?._id || ""} driveId={driveId || ""}/>
             </div>}
             <div className="w-1/2 translate-x-1/2">
-                <button className="btn btn-block"  onClickCapture={() => setIsFaceSelectOpen(prev => !prev)}>{isFaceSelectOpen ? <ArrowUpFromLine/> : <ArrowDownFromLine/>}</button>
+                <button className="btn btn-block"  onClickCapture={() => setIsFaceSelectOpen(prev => !prev)}>{isFaceSelectOpen ? <ArrowUpFromLine/> : <SearchIcon/>}</button>
             </div>
         </div>
-
-        <div className="flex flex-row flex-wrap gap-4">
+        <div className="absolute right-5 top-5 bg-gray-800 p-2 rounded-2xl">
+          <DownloadIcon/>
+        </div>
+        <div className="flex flex-row flex-wrap gap-4 mt-[8vh] justify-between">
             {searchData &&
                 searchData.map((element , index) => (
                 <div key={element.id} className="relative">
@@ -142,7 +144,7 @@ export default function ProjsChild() {
                         rel="noopener noreferrer"
                         className="absolute top-2 right-2 bg-black/50 text-white px-2 py-1 rounded hover:bg-black/70 text-sm"
                     >
-                        Download
+                        <DownloadIcon/>
                     </a>
                 </div>
             ))}
