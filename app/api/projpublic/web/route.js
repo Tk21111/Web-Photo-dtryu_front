@@ -19,8 +19,8 @@ async function recursiveFolder(drive , driveFolder )
             continue;
         }
         for (const f of data.files){
-            files.push(...f.id);
-            tmp = recursiveFolder(drive , f);
+            files.push(f.id);
+            tmp = await recursiveFolder(drive , f);
             files.push(...tmp);
         }
         
@@ -42,7 +42,7 @@ export async function PATCH(req) {
         }
 
         const drive = serviceAccSelector(0);
-        const allFolderIds = await recursiveFolder(drive , driveFolder , tags)
+        const allFolderIds = await recursiveFolder(drive , driveFolder)
         allFolderIds.push(driveFolder)
 
         let allFiles = []
