@@ -36,6 +36,7 @@ export async function PATCH(req) {
 
                 const servicesAcc = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON)
 
+                let i =0
                 for (const serviceAcc of servicesAcc){
                     
                     try {
@@ -47,10 +48,12 @@ export async function PATCH(req) {
                         // Initialize the Drive API client
                         const drive = google.drive({ version: 'v3', auth });
                         const driveUsed = await drive.about.get({ fields: 'storageQuota' });
-
+                        
+                        console.log(driveUsed.data.storageQuota)
                         if (driveUsed && (driveUsed.data.storageQuota.limit - userInfo.driveBuffer) - driveUsed.data.storageQuota.usage - projectReq.size > 0) {
                             return i;  // good use this
                         } 
+                        i++;
                     } catch(err){
                         console.error(err + " ; driveUsageCheck/checkStorage");
                         continue;
@@ -91,7 +94,7 @@ export async function PATCH(req) {
             let projsArrSorted = []
             for (let p of projsArr){
 
-                const proFilterPermanent = p.filter((val) => !val.permanent && val.user === projectReq.user);
+                const proFilterPermanent = p.filter((val) => !val?.permanent || false && val?.user || undefined === projectReq.user);
                 const projByOldest =  proFilterPermanent.sort((a, b) => Date.parse(b.timeReqFullfill) - Date.parse(a.timeReqFullfill));
                 projsArrSorted.push(projByOldest[0])
             }
@@ -100,7 +103,7 @@ export async function PATCH(req) {
             let oldestProjService = projsArrSorted.sort((a,b) => Date.parse(b.timeReqFullfill) - Date.parse(a.timeReqFullfill));
             const serviceAccUse = oldestProjService[0].serviceAcc;
             
-            if(!oldestProjService){
+            if(!oldestProjService || oldestProjService.length === 0){
                 return [null , null];
             }
 

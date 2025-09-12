@@ -164,7 +164,7 @@ export default function ProjList() {
         delete formatProjs[formatM[indexM] + " " + formatDateLR[index][0]]
       }
 
-      //insert ptio list front 
+      //insert prio list front 
       if(formatProjs[formatM[indexM] + " " + formatDateLR[index][0]] && prio.length > 0){
         const Tmp = formatProjs[formatM[indexM] + " " + formatDateLR[index][0]]?.filter(val => !prio.includes(val))
         formatProjs[formatM[indexM] + " " + formatDateLR[index][0]] = [...prio , ...(Tmp ?? [])];
@@ -201,8 +201,10 @@ export default function ProjList() {
 
 
   const serviceAccList: { [key: number]: number } = {}
-  for (const { serviceAcc, size } of projs) {
-    serviceAccList[serviceAcc] = (serviceAccList[serviceAcc] || 0) + size;
+  for (const { serviceAcc, size  , status} of projs) {
+    if (status === "onDrive"){
+      serviceAccList[serviceAcc] = (serviceAccList[serviceAcc] || 0) + size;
+    }
   }
 
   return (
