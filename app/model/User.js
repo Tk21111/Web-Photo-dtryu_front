@@ -24,6 +24,13 @@ const userSchema = new mongoose.Schema({
     autoQueue  :{
         type : String,
         default : "true"
+    },
+    email : {
+        type : String,
+        required : true
+    },
+    tagId : {
+        type : String
     }
 
 })

@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
-import GoogleProvider from "next-auth/providers/google";
-
+import GoogleProvider, { GoogleProfile } from "next-auth/providers/google";
+import User from "@/app/model/User";
+import { connectToDatabase } from "@/app/lib/mongodb";
 export const authOptions = {
   providers: [
     GoogleProvider({
@@ -9,12 +10,30 @@ export const authOptions = {
     }),
   ],
   callbacks: {
-    async signIn({ profile }: { profile: any }) {
-      // restrict to company domain
-      // return profile?.hd === "satriwit3.ac.th";
-      return true
-    },
+  async signIn({ profile }) {
+    await connectToDatabase();
+
+    const user = await User.findOne({ email: profile?.email });
+
+    if (user || profile?.hd === "mycompany.com") {
+      return true;
+    }
+    return false;
   },
+  async jwt({ token, user }) {
+    if (user) {
+      // fetch user again if needed
+      const dbUser = await User.findOne({ email: user.email });
+      if (dbUser?.tagId) token.tag = dbUser.tagId;
+    }
+    return token;
+  },
+  async session({ session, token }) {
+    if (token.tag) session.user.tag = token.tag;
+    return session;
+  },
+}
+
 };
 
 const handler = NextAuth(authOptions);

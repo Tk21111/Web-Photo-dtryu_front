@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import serviceAccSelector from "../../../utils/serviceAccSelector";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../../auth/[...nextauth]/route";
 
 //q: `name contains '[${tag}]' and '${driveFolder}' in parents and trashed=false`,
 async function recursiveFolder(drive , driveFolder )
@@ -20,7 +22,7 @@ async function recursiveFolder(drive , driveFolder )
         }
         for (const f of data.files){
             files.push(f.id);
-            tmp = await recursiveFolder(drive , f);
+            tmp = await recursiveFolder(drive , f.id);
             files.push(...tmp);
         }
         
@@ -34,9 +36,14 @@ async function recursiveFolder(drive , driveFolder )
 } 
 export async function PATCH(req) {
     try {
+        const session = await getServerSession(authOptions);
+
+        if(!session){
+            return NextResponse.json({"msg" : "no permission"} , {status : 403})
+        }
+
         const { driveFolder, tags } = await req.json();
 
-        console.log(tags)
         if (!driveFolder || !tags || !Array.isArray(tags)) {
             return NextResponse.json({ msg: "bad req" }, { status: 400 });
         }
@@ -64,9 +71,13 @@ export async function PATCH(req) {
                 });
 
                 if (data.files?.length) {
-
-                    allFiles.push(...data.files.filter(val=> val.name.includes(`[${tag}]`)));
+                    for (const val of data.files) {
+                        if (val.name.includes(`[${tag}]`) && !allFiles.some(f => f.id === val.id)) {
+                        allFiles.push(val);
+                        }
+                    }
                 }
+
 
                 pageToken = data.nextPageToken;
             } while (pageToken);

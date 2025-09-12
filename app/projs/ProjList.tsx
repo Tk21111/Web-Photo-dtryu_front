@@ -3,11 +3,12 @@
 import { useState, useEffect, useMemo } from "react";
 import io from "socket.io-client";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-
+import { useRouter as useRouterRouter ,} from "next/router";
 import { useSelector } from "react-redux";
 import { selectRoles, selectUserId } from "../api/redux/authSlice";
 import { serviceAccInfo } from "../utils/serviceAccConvertong";
 import TimeGroup from "../components/TimeGroup";
+import { useSession } from "next-auth/react";
 
 
 type Proj = {
@@ -54,7 +55,7 @@ export default function ProjList() {
   const fetchProjects = async () => {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_HOST}/api/projpublic`, {
-        cache: "no-store",
+        cache: "force-cache",
       });
 
       if (!res.ok) throw new Error(`Failed to fetch data: ${res.status}`);
@@ -76,7 +77,13 @@ export default function ProjList() {
     }
   };
 
-  
+  const {data : session} = useSession();
+  useEffect(() => {
+    if (projs && session && session?.user?.tag){
+      const proj : Proj = projs[projs.length -1]
+      router.prefetch(`/projs/${proj._id}?driveId=${proj.locationOnDrive}&tag${session?.user?.tag}`);
+    }
+  }, [projs , session]);
 
   useEffect(() => {
     fetchProjects(); // Initial fetch
@@ -229,8 +236,8 @@ export default function ProjList() {
         </div>
         
         <div className="dropdown dropdown-left">
-            <div tabIndex={0} role="button" className="btn m-1 bg-gray-300 border-gray-400 hover:bg-gray-600 hover:border-gray-700 hover:scale-110 transition-all duration-300 focus:bg-gray-700">Setting</div>
-            <ul tabIndex={0} className="dropdown-content menu-sm bg-base-100 rounded-box z-1 w-30 p-2 shadow-sm text-base-content">
+            <div tabIndex={0} role="button" className="btn m-1 bg-gray-300 border-gray-400 hover:bg-gray-600 hover:border-gray-700 hover:scale-110 transition-all duration-300 focus:bg-gray-700">{session ? "Setting" : "Login" }</div>
+            {/* <ul tabIndex={0} className="dropdown-content menu-sm bg-base-100 rounded-box z-1 w-30 p-2 shadow-sm text-base-content">
               <li className="font-semibold">StorageUsed</li>
               <li className="text-sm">{((projs.reduce((sum , curr) => sum + curr.size, 0)) / (1024**3)).toFixed(2) + " / " + (serviceAccInfo.length *14.5) + " GB"}</li>
               <li className="font-semibold">Allow</li>
@@ -242,6 +249,12 @@ export default function ProjList() {
               {serviceAccInfo.map((_,  i) => 
                 <li key={i} className="text-sm ">{i + " : " + (serviceAccList[Number(i)] ? (serviceAccList[Number(i)] / (1024**3)).toFixed(2) + " / 14.5 " : "Not in use")}</li>
               )}
+            </ul> */}
+             <ul tabIndex={0} className="dropdown-content menu-sm bg-base-100 rounded-box z-1 w-fit p-2 shadow-sm text-base-content">
+              <li className="font-semibold">Welcome</li>      
+              <li className=" overflow-clip">{session?.user.email}</li>
+              <li className=" overflow-clip">{session?.user.name}</li>
+              <li className=" overflow-clip">{session?.user.tag }</li>
             </ul>
         </div>
         
