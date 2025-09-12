@@ -1,7 +1,26 @@
 "use client"
 import Image from "next/image";
+import React, { useState } from "react";
 
 const FaceSelect = ({id , driveId} : {id : string, driveId : string | undefined}) => {
+
+  const [faceSelected , setFaceSelected] = useState<number[] | null>(null);
+  const [faceLastIndex , setFaceLastIndex] = useState<number | null>(null);
+
+  const handleClick = (e : React.MouseEvent , index : number) => {
+
+    if(faceLastIndex == null){
+      setFaceSelected([index]);
+      setFaceLastIndex(index);
+    } else {
+
+      const start = Math.min(index , faceLastIndex);
+      const end = Math.max(index , faceLastIndex);
+
+      const range = Array.from({length : end - start -1}).map((_,i) => start + i)
+      setFaceSelected(range);
+    }
+  }
 
   return (
     <div className="flex w-full justify-center">
