@@ -6,11 +6,14 @@ declare module "next-auth" {
       name?: string | null;
       email?: string | null;
       image?: string | null;
-      tag?: string; // ✅ add your custom field here
+      tag?: string |null ; 
     };
   }
 
   interface JWT {
-    tag?: string; // if you store it in JWT
+    tag?: string; 
+  }
+   interface User {
+    tag?: string |null | undefined; 
   }
 }

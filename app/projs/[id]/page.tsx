@@ -1,7 +1,6 @@
 "use client";
 import FaceSelect from "@/app/components/FaceSelect";
-import {  ArrowUpFromLine, CheckCheckIcon, CheckCircle2, Download, DownloadIcon, SearchIcon } from "lucide-react";
-import { useSession } from "next-auth/react";
+import {  ArrowUpFromLine, CheckCircle2, Download, DownloadIcon, SearchIcon } from "lucide-react";
 import Image from "next/image";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import React, { useCallback, useEffect, useState } from "react";
@@ -20,18 +19,22 @@ export default function ProjsChild() {
     const searchParams = useSearchParams();
 
     //everytime reload react see that arr get create so it think there is a undate so keep sending req
-    const tagString = searchParams.get("tag")
+    const tagString = searchParams.get("tag");
     const tag = tagString?.split(",") || [];
-    const driveId = searchParams.get("driveId")
+    const driveId = searchParams.get("driveId");
+    const together = searchParams.get("together");
 
     const [projData, setProjData] = useState<ProjData | null>(null);
-    const [searchData, setSearchData] = useState<TagSearch[] | null[] | null >(Array.from({length : 20}).map(val => null));
+    const [searchData, setSearchData] = useState<(TagSearch | null)[] | null >(Array.from({length : 20}).map(()=> null));
 
     const [isFaceSelectOpen , setIsFaceSelectOpen] = useState<boolean>(false);
     const [currentIndex, setCurrentIndex] = useState<number | null>(null);
 
+    const [err , setErr] = useState<string | null>(null);
+    const [recommend , setRecommend] = useState<{ string : number[]} | null>(null);
+
     const [imageLoading , setIamgeLoading] = useState<boolean>(false);
-    const [reverseImages , setReverseImage] = useState<any>(true);
+    const [reverseImages , setReverseImage] = useState<boolean>(true);
 
     const [selcetdImage , setSelectedImage] = useState<number[] | null>(null);
     const [lastSelectedIndex , setLastSelectedIndex] = useState<number | null>(null);
@@ -45,19 +48,29 @@ export default function ProjsChild() {
             return
         }
 
+        setErr(null);
+        setRecommend(null)
         try {
         setIamgeLoading(true);
         const res = await fetch(`${process.env.NEXT_PUBLIC_HOST}/api/projpublic/web`, {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-            driveFolder: driveId,
-            tags: tag,
+              driveFolder: driveId,
+              tags: tag,
+              together : together
             }),
-            cache: "no-store",
+            cache: "force-cache",
         });
 
-        if (!res.ok) throw new Error(`Failed to fetch data: ${res.status}`);
+        if (!res.ok) {
+          if(res.status === 404){
+              const data: { recomm : { string : number[]}} = await res.json();
+              setErr("image not found");
+              setRecommend(data.recomm)
+          }
+          throw new Error(`Failed to fetch data: ${res.status}`);
+        }
         const data: TagSearch[] = await res.json();
         setIamgeLoading(false);
 
@@ -164,11 +177,8 @@ export default function ProjsChild() {
         <div className="fixed h-[100px] w-full  z-50 backdrop-blur-3xl rounded-2xl">
           <div className="absolute flex-col z-10 w-[55%] left-1/2 -translate-x-1/2 p-1 top-7 ">
               {isFaceSelectOpen && <div className=" relative w-fit h-fit">
-                  <div className="absolute inset-0 flex flex-col backdrop-blur-md rounded-4xl bg-gray-600/40"/>
-                  <div className=" justify-center">
-                      <p className="text-center">Face search</p>
-                  </div>
-                  <FaceSelect id={projData?._id || ""} driveId={driveId || ""}/>
+                  <div className="absolute inset-0 flex flex-col backdrop-blur-3xl rounded-4xl bg-gray-800/40"/>
+                  <FaceSelect id={projData?._id || ""} driveId={driveId || ""} imgList={undefined} tagParent={undefined}/>
               </div>}
               <div className="w-1/2 translate-x-1/2">
                   <button className="btn btn-block"  onClickCapture={() => setIsFaceSelectOpen(prev => !prev)}>{isFaceSelectOpen ? <ArrowUpFromLine/> : <SearchIcon/>}</button>
@@ -180,7 +190,7 @@ export default function ProjsChild() {
               </button>
           </div>
           <div className="absolute right-20 w-fit top-7 bg-gray-700 focus:bg-gray-700 shadow-2xs shadow-black duration-150 h-fit rounded-2xl p-1.5 border-1">
-              <select onChange={(e) => setReverseImage(e.target.value)}>
+              <select onChange={(e) => setReverseImage(e.target.value === "1" ? true : false )}>
                 <option value={1}>newest</option>
                 <option value={0}>oldest</option>
               </select>
@@ -197,12 +207,26 @@ export default function ProjsChild() {
         </div>
         
         <div className="flex flex-row flex-wrap gap-4 mt-[16vh] justify-between px-4" onClick={()=> {setSelectedImage(null); setLastSelectedIndex(null)}}>
-            {/* { imageLoading && 
+            { err && 
               <div className="flex h-full w-full justify-center align-middle">
-                <Loader2Icon/>
+                <p>{err}</p>
               </div>
-            } */}
-            {searchData &&
+            }
+            {recommend && (
+              <div className="flex flex-col w-full gap-4">
+                {Object.entries(recommend).map(([tag, recs]) => (
+                  <div key={tag} className="border p-2 rounded">
+                    <p className="font-bold">{tag}:</p>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      <FaceSelect id={projData?._id} driveId={driveId} imgList={recs} tagParent={tag}/>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+
+            {searchData && !err&&
                 searchData.map((element , index) => (
                 <div key={index} className="relative hover:scale-105 hover:shadow-2xl shadow-black duration-300 rounded-lg h-fit w-fit" >
                     {/* Image */}
