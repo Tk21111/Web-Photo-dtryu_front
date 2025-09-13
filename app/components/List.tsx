@@ -154,13 +154,13 @@ export default function List({ proj }: { proj: Proj }) {
 
 
   return (
-    <div className={`w-full h-fit pl-2 py-1 border-2 rounded-2xl shadow-2xl bg-accent-content transition-all duration-500 ease-in-out
+    <div className={`w-full h-fit pl-2 py-1 border-2 rounded-2xl shadow-2xl bg-accent-content transition-all duration-500 ease-in-out 
       ${isOpen && "h-full"}
       ${proj.status === "uploading" || proj.status === "updating" || click ? "bg-orange-300 text-orange-800 animate-pulse" : ""}
       ${proj.status === "onDrive" ? " text-white" : ""} 
       ${proj.status === "deleting" ? "bg-orange-200 blur-2xl shadow-lg" : ""} 
       ${reqFail ? "bg-red-200 shadow-lg animate-none" : ""} 
-     hover:shadow-orange-200 hover:scale-105 opacity-85 hover:opacity-100 transform origin-center`}>
+     hover:shadow-orange-200 hover:scale-105 opacity-85 hover:opacity-100 hover:z-10 hover:${isOpen ? "" : "cursor-pointer"} transform origin-center`}>
         
 
       

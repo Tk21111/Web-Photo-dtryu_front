@@ -61,36 +61,38 @@ export async function PATCH(req) {
         let recomm = {}
         let allFiles = []
 
-        if (!together){
-            for (const tag of tags) {
-                let pageToken = null;
+        if (!together || tags.length === 0){
+           
+            let pageToken = null;
 
-                do {
-                    // Search in all folders at once
-                    const folderQueries = allFolderIds.map(folderId => `'${folderId}' in parents`);
-                    const folderQuery = `(${folderQueries.join(' or ')})`;
-                    
-                    const { data } = await drive.files.list({
-                        q: `name contains '[${tag}]' and ${folderQuery} and trashed=false and mimeType!='application/vnd.google-apps.folder'`,
-                        fields: "nextPageToken, files(id, name, mimeType, parents)",
-                        pageSize: 1000,
-                        pageToken: pageToken || undefined,
-                        supportsAllDrives: true
-                    });
+            do {
+            // Search in all folders at once
+            const folderQueries = allFolderIds.map(folderId => `'${folderId}' in parents`);
+            const folderQuery = `(${folderQueries.join(' or ')})`;
+            const tagFormatted = tags.map(tag => `name contains '[${tag}]'`);
+            const tagstr = `(${tagFormatted.join(" or ")})`
+            
+            const { data } = await drive.files.list({
+                q: `${tagstr} and ${folderQuery} and trashed=false and mimeType!='application/vnd.google-apps.folder'`,
+                fields: "nextPageToken, files(id, name, mimeType, parents)",
+                pageSize: 1000,
+                pageToken: pageToken || undefined,
+                supportsAllDrives: true
+            });
 
-                    if (data.files?.length) {
-                        for (const val of data.files) {
-                            if (val.name.includes(`[${tag}]`) && !allFiles.some(f => f.id === val.id)) {
-                            allFiles.push(val);
-                            }
-                        }
+            if (data.files?.length) {
+                for (const val of data.files) {
+                    if (!allFiles.some(f => f.id === val.id)) {
+                        allFiles.push(val);
                     }
-
-
-                    pageToken = data.nextPageToken;
-                } while (pageToken);
+                }
             }
-        } else if (tags.length > 1){
+
+
+                pageToken = data.nextPageToken;
+            } while (pageToken);
+            
+        } else {
             let pageToken = null;
 
             do {
@@ -190,11 +192,10 @@ export async function PATCH(req) {
             }
             }
         }
-         if( recomm && Object.keys(recomm) > 0)
-        {
+
+        if( recomm && Object.keys(recomm).length > 0){
             return NextResponse.json({recomm} , { status : 404})
-        } else if( !allFiles || allFiles.length === 0)
-        {
+        } else if( !allFiles || allFiles.length === 0) {
             return NextResponse.json({"msg" : "not found"} , { status : 404})
         }
 

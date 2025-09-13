@@ -11,7 +11,6 @@ const FaceSelect = ({id , driveId , imgList , tagParent} : {id : string  | undef
   const [lastSelectedIndex , setLastSelectedIndex] = useState<number | null>(null);
 
   const faceSelectRef = useRef<HTMLDivElement | null>(null);
-
   const {data : session } = useSession();
 
   //read param
@@ -19,6 +18,10 @@ const FaceSelect = ({id , driveId , imgList , tagParent} : {id : string  | undef
   const tagString = searchParams.get("tag");
   const tag = tagString?.split(",") || [];
 
+  //defalut if nothing
+  const imagLists : number[] = imgList?.map(Number) ||  Array.from({length : 35}).map((_,i)=> i) ;
+
+  const imgListFormatted = imagLists?.map(t => Number(t)).filter(n => !isNaN(n))
   useEffect(() => {
     if (tag && tag.length > 0 && !tagParent && !imgList){
       const numericTags = tag.map(t => Number(t)).filter(n => !isNaN(n)); // convert to numbers and remove invalid
@@ -58,36 +61,45 @@ const FaceSelect = ({id , driveId , imgList , tagParent} : {id : string  | undef
                   prev?.includes(index) ? prev.filter(i => i !== index) : prev && [ ...prev , index]
                 );      
         } else {
-            setLastSelectedIndex(index);
-            setSelectedImage([index]);
-            
+
+            if(selcetdImage?.includes(index)){
+              setSelectedImage(prev => prev ? prev.filter(val => val !== index) : prev)
+              if(lastSelectedIndex === index){
+                setLastSelectedIndex(null);
+              }
+            } else {
+              setLastSelectedIndex(index);
+              setSelectedImage([index]);
+            }       
         }
       }
 
   const router = useRouter()
-  console.log((id ? `${process.env.NEXT_PUBLIC_HOST}/projs/${id}?${driveId ? "driveId=" + driveId + "&tag=" + selcetdImage?.join(",") + (tagParent ? "," + tagParent : ""): ""}` : "")
-)
+
+  console.log(imgListFormatted)
   const handleSearchClick = (together : boolean)=>{
-    if (selcetdImage && selcetdImage?.length > 0)
-    router.push(id ? `${process.env.NEXT_PUBLIC_HOST}/projs/${id}?${(driveId ? "driveId=" + driveId + "&tag=" + selcetdImage?.join(",") + (tagParent ? "," + tagParent : ""): "") + (together ? "&together=true" : "")}` : "")
+    if (!selcetdImage) return;
+    if (selcetdImage?.length === imgListFormatted?.length && !together){
+      window.open(`https://drive.google.com/drive/folders/${driveId}`, "_blank");
+    } else if (selcetdImage?.length > 0) router.push(id ? `${process.env.NEXT_PUBLIC_HOST}/projs/${id}?${(driveId ? "driveId=" + driveId + "&tag=" + selcetdImage.map(val => imgListFormatted.at(val))?.join(",") + (tagParent ? "," + tagParent : ""): "") + (together ? "&together=true" : "")}` : "")
   }
 
   return (
     <>
-      { session && <div className="flex w-full p-2 justify-center flex-col" ref={faceSelectRef}>
+      { session && <div className="flex w-full p-2 justify-center flex-col h-full cursor-pointer " ref={faceSelectRef}>
           <div className="flex flex-wrap  justify-center space-y-1 space-x-1">
         
           {imgList ? 
-            imgList.map((ele)=>(
+            imgList.map((ele , index)=>(
               <div
-                  onClick={(e) =>(handleImageClick(e , ele))}
-                  className={`relative rounded-full border-2 border-black h-[50px] w-[50px] overflow-hidden
-                              ${selcetdImage?.includes(ele) ? "border-white shadow-2xl shadow-black" : selcetdImage ? " opacity-70" : ""}
+                  onClick={(e) =>(handleImageClick(e , index))}
+                  className={`relative rounded-full border-2 border-black h-[50px] w-[50px] overflow-hidden 
+                              ${selcetdImage?.includes(index) ? "border-white shadow-2xl shadow-black" : selcetdImage && selcetdImage?.length > 0 ? " opacity-70" : ""}
                     `}
                   key={ele}
 
                   >
-                  {selcetdImage?.includes(ele) && <div className=" absolute top-1/2 left-1/2 z-10">
+                  {selcetdImage?.includes(index) && <div className=" absolute top-1/2 left-1/2 z-10">
                     <CheckCircle2/>
                   </div>}
                   <Image
@@ -95,7 +107,7 @@ const FaceSelect = ({id , driveId , imgList , tagParent} : {id : string  | undef
                       src={`/img/${ele}.jpg`}
                       alt={`Image ${ele}`}
                       fill
-                      className="object-cover rounded-full"
+                      className="object-cover rounded-full "
                   />
                   </div>
 

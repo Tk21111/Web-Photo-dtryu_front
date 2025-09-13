@@ -60,13 +60,13 @@ export default function ProjsChild() {
               tags: tag,
               together : together
             }),
-            cache: "force-cache",
+            cache: "default",
         });
 
         if (!res.ok) {
           if(res.status === 404){
               const data: { recomm : { string : number[]}} = await res.json();
-              setErr("image not found");
+              setErr("Image not found");
               setRecommend(data.recomm)
           }
           throw new Error(`Failed to fetch data: ${res.status}`);
@@ -173,14 +173,14 @@ export default function ProjsChild() {
     };
     
     return (
-    <div className="flex flex-col">
+    <div className={`flex flex-col p-2 h-full w-full`}>
         <div className="fixed h-[100px] w-full  z-50 backdrop-blur-3xl rounded-2xl">
           <div className="absolute flex-col z-10 w-[55%] left-1/2 -translate-x-1/2 p-1 top-7 ">
               {isFaceSelectOpen && <div className=" relative w-fit h-fit">
                   <div className="absolute inset-0 flex flex-col backdrop-blur-3xl rounded-4xl bg-gray-800/40"/>
                   <FaceSelect id={projData?._id || ""} driveId={driveId || ""} imgList={undefined} tagParent={undefined}/>
               </div>}
-              <div className="w-1/2 translate-x-1/2">
+              <div className="absolute left-1/2 w-1/2 max-sm:left-[10%] -translate-x-1/2">
                   <button className="btn btn-block"  onClickCapture={() => setIsFaceSelectOpen(prev => !prev)}>{isFaceSelectOpen ? <ArrowUpFromLine/> : <SearchIcon/>}</button>
               </div>
           </div>
@@ -189,14 +189,14 @@ export default function ProjsChild() {
                 ◀
               </button>
           </div>
-          <div className="absolute right-20 w-fit top-7 bg-gray-700 focus:bg-gray-700 shadow-2xs shadow-black duration-150 h-fit rounded-2xl p-1.5 border-1">
+          <div className="absolute max-sm:right-[18%] right-20 w-fit top-7 bg-gray-700 focus:bg-gray-700 shadow-2xs shadow-black duration-150 h-fit rounded-2xl p-1.5 border-1">
               <select onChange={(e) => setReverseImage(e.target.value === "1" ? true : false )}>
                 <option value={1}>newest</option>
                 <option value={0}>oldest</option>
               </select>
           </div>
           <div 
-              className="absolute right-5 top-5 p-2 rounded-2xl flex-col flex w-fit items-center" 
+              className="absolute right-5 top-5 p-2 rounded-2xl flex-col flex w-fit items-center cursor-pointer" 
               onClick={handleDownloadAll}
               >
               <div className="h-fit w-fit p-2 bg-gray-800 rounded-2xl">
@@ -208,15 +208,25 @@ export default function ProjsChild() {
         
         <div className="flex flex-row flex-wrap gap-4 mt-[16vh] justify-between px-4" onClick={()=> {setSelectedImage(null); setLastSelectedIndex(null)}}>
             { err && 
-              <div className="flex h-full w-full justify-center align-middle">
-                <p>{err}</p>
+              <div className="flex h-full w-full justify-center align-middle flex-col text-center">
+                <p className="text-4xl font-bold text-red-600 ">{"⚠️⚠️⚠️" + err + "⚠️⚠️⚠️"}</p>
+                <p>also yes i know the search bar is not center</p>
               </div>
             }
             {recommend && (
               <div className="flex flex-col w-full gap-4">
+                <p className="text-4xl font-bold text-primary ">Try this instade</p>
                 {Object.entries(recommend).map(([tag, recs]) => (
-                  <div key={tag} className="border p-2 rounded">
-                    <p className="font-bold">{tag}:</p>
+                  <div key={tag} className="border p-2 rounded h-fit">
+                    <div  className="relative rounded-full border-2 border-black h-[50px] w-[50px] overflow-hidden">
+                      <Image
+                        key={tag}
+                        src={`/img/${tag}.jpg`}
+                        alt={`Image ${tag}`}
+                        fill
+                        className="object-cover rounded-full"
+                      />
+                    </div>
                     <div className="flex flex-wrap gap-2 mt-1">
                       <FaceSelect id={projData?._id} driveId={driveId} imgList={recs} tagParent={tag}/>
                     </div>
@@ -235,12 +245,16 @@ export default function ProjsChild() {
                         alt=""
                         width={300}
                         height={300}
-                        className={`rounded-lg transition-all  duration-300 
+                        className={`rounded-lg transition-all  duration-300 cursor-pointer
                             ${ imageLoading ? "bg-black animate-pulse" : "opacity-100"}
                             ${ selcetdImage && selcetdImage.includes(index) ? "shadow-2xl border-4 border-white" : ""}
                             `}   
                             
                         onClick={(e : React.MouseEvent)=> {
+
+                          if(imageLoading){
+                            return;
+                          }
                           e.preventDefault();
                           e.stopPropagation();
 
@@ -253,14 +267,20 @@ export default function ProjsChild() {
                     </div>}
 
                     {/* Download Button */}
-                    <a
+                    {!imageLoading ? <a
                         href={`https://drive.google.com/uc?export=download&id=${element?.id}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="absolute top-2 right-2 bg-black/50 text-white px-2 py-1 rounded hover:bg-black/70 text-sm"
                     >
                         <DownloadIcon/>
-                    </a>
+                    </a> : 
+                    <div
+                        className="absolute top-2 right-2 bg-black/50 text-white px-2 py-1 rounded hover:bg-black/70 text-sm"
+                    >
+                        <DownloadIcon/>
+                    </div>
+                    }
                 </div>
             ))}
         </div>
