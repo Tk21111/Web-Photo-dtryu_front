@@ -28,7 +28,8 @@ const authOptions: NextAuthOptions = {
         const googleProfile = profile as any; // or "as GoogleProfile" if sure
         const user = await User.findOne({ email: googleProfile?.email });
 
-        if (user || googleProfile?.hd === "mycompany.com") {
+        // if (user || googleProfile?.hd === "mycompany.com") {
+        if (user) {
             return true;
         }
         return false;

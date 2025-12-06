@@ -22,7 +22,7 @@
 }
 
 body {
-  background: linear-gradient(to bottom left, #ededed, #51637d); /* from-blue-500 to-purple-700 */
+  background: linear-gradient(to bottom left, #ededed00, #192330); /* from-blue-500 to-purple-700 */
   color: #ededed;
   font-family: Arial, Helvetica, sans-serif;
   padding: 1rem;

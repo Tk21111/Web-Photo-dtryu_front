@@ -79,14 +79,24 @@ const FaceSelect = ({id , driveId , imgList , tagParent} : {id : string  | undef
   console.log(imgListFormatted)
   const handleSearchClick = (together : boolean)=>{
     if (!selcetdImage) return;
+    if (selcetdImage?.length === 0) {
+        router.push(`${process.env.NEXT_PUBLIC_HOST}/proj-new/${id}`);
+        return;
+    }
     if (selcetdImage?.length === imgListFormatted?.length && !together){
       window.open(`https://drive.google.com/drive/folders/${driveId}`, "_blank");
-    } else if (selcetdImage?.length > 0) router.push(id ? `${process.env.NEXT_PUBLIC_HOST}/projs/${id}?${(driveId ? "driveId=" + driveId + "&tag=" + selcetdImage.map(val => imgListFormatted.at(val))?.join(",") + (tagParent ? "," + tagParent : ""): "") + (together ? "&together=true" : "")}` : "")
+    } else if (selcetdImage?.length > 0 && id) {
+        if (!driveId) {
+          router.push(`${process.env.NEXT_PUBLIC_HOST}/proj-new/${id}?${"&tag=" + selcetdImage.map(val => imgListFormatted.at(val))?.join(",") + (tagParent ? "," + tagParent : "") + (together ? "&strict=true" : "")}`)
+        } else {
+          router.push(`${process.env.NEXT_PUBLIC_HOST}/projs/${id}?${(driveId ? "driveId=" + driveId + "&tag=" + selcetdImage.map(val => imgListFormatted.at(val))?.join(",") + (tagParent ? "," + tagParent : ""): "") + (together ? "&together=true" : "")}`)
+        }
+      } 
   }
 
   return (
     <>
-      { session && <div className="flex w-full p-2 justify-center flex-col h-full cursor-pointer " ref={faceSelectRef}>
+      {  <div className="flex w-full p-2 justify-center flex-col h-full cursor-pointer " ref={faceSelectRef}>
           <div className="flex flex-wrap  justify-center space-y-1 space-x-1">
         
           {imgList ? 

@@ -7,7 +7,7 @@ export async function GET() {
 
     await connectToNewDatabase();
 
-
+    console.log("hellow bitvh")
     // Fetch all documents as an array
     const data = await newProj.find({})
 

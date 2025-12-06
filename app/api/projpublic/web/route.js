@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import serviceAccSelector from "../../../utils/serviceAccSelector";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/lib/auth";
+import Drive from "../../../model/Drive"
+
 
 //q: `name contains '[${tag}]' and '${driveFolder}' in parents and trashed=false`,
 async function recursiveFolder(drive , driveFolder )
@@ -42,16 +44,37 @@ export async function PATCH(req) {
     }
 
     try {
-        const session = await getServerSession(authOptions);
+        // const session = await getServerSession(authOptions);
 
-        if(!session){
-            return NextResponse.json({"msg" : "no permission"} , {status : 403})
+        // if(!session){
+        //     return NextResponse.json({"msg" : "no permission"} , {status : 403})
+        // }
+
+        let { driveFolder, tags , together , projId} = await req.json();
+
+        if ( !projId) {
+            return NextResponse.json({ msg: "bad req" }, { status: 400 });
         }
 
-        const { driveFolder, tags , together} = await req.json();
+        if (!tags || tags.length === 0 || !Array.isArray(tags)) {
+            if (!driveFolder) {
+                console.log(projId)
+                const data = await Drive.findById(projId)
+                if (!data) {
+                    return NextResponse.json({msg : "force redirect google drive folder not found"} , {status : 404});
+                }
+                driveFolder = data.locationOnDrive
+            }
+            return NextResponse.json({msg : "Redirect" , driveFolder} , {status : 302})
+        }
+        
 
-        if (!driveFolder || !tags || !Array.isArray(tags)) {
-            return NextResponse.json({ msg: "bad req" }, { status: 400 });
+        if (!driveFolder) {
+            const data = await Drive.findById(projId)
+            if (!data) {
+                return NextResponse.json({msg : "google drive folder not found"} , {status : 404});
+            }
+            driveFolder = data.locationOnDrive
         }
 
         const drive = serviceAccSelector(0);
