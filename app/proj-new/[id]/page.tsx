@@ -1,62 +1,86 @@
 "use client";
-import { CheckCircle2, Download, DownloadIcon, ArrowLeft, ArrowUpFromLine, SearchIcon } from "lucide-react";
+
+import {
+  CheckCircle2,
+  Download,
+  DownloadIcon,
+  ArrowLeft,
+  ArrowUpFromLine,
+  SearchIcon,
+} from "lucide-react";
+
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import React, { useCallback, useEffect, useState } from "react";
-// IMPORT THE VIEWER
-import ModernViewer from "../../components/ImageViewer"; 
 import FaceSelect from "@/app/components/FaceSelect";
+
+/* -------------------- SAFE DYNAMIC IMPORT -------------------- */
+const ModernViewer = dynamic(
+  () => import("../../components/ImageViewer"),
+  { ssr: false }
+);
+
+/* ============================================================= */
 
 export default function SimpleGallery() {
   const params = useParams<{ id: string }>();
-  const route = useRouter();
-
+  const router = useRouter();
   const searchParams = useSearchParams();
+
   const tagString = searchParams.get("tag");
-  const tag = tagString?.split(",") || [];
-  const driveId = searchParams.get("driveId");
   const strict = searchParams.get("strict");
-  
-  const [isFaceSelectOpen , setIsFaceSelectOpen] = useState<boolean>(false);
-  const [imageIds, setImageIds] = useState<string[] | null>(null);
+  const driveId = searchParams.get("driveId");
+
+  const tags = tagString?.split(",") ?? [];
+
+  const [imageIds, setImageIds] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState<number | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [selectedIndices, setSelectedIndices] = useState<number[] | null>(null);
-  const [lastSelectedIndex, setLastSelectedIndex] = useState<number | null>(null);
 
-  // Helper: Generate Image URL
-  const getImageUrl = (id: string) => {
-    return `${process.env.NEXT_PUBLIC_IMAGE_SERVER}/image/${id}?resize=10`;
-  };
-  
-  // Note: OpenSeadragon usually handles high-res better without resize=50, 
-  // but keep it if your server requires it.
-  const getImageFullUrl = (id: string) => {
-    return `${process.env.NEXT_PUBLIC_IMAGE_SERVER}/image/${id}?resize=50`;
-  };
+  const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
+  const [lastSelectedIndex, setLastSelectedIndex] = useState<number | null>(
+    null
+  );
 
-  // 1. Fetch Image List
+  const [isFaceSelectOpen, setIsFaceSelectOpen] = useState(false);
+
+  /* ===================== URL HELPERS ===================== */
+
+  const getThumbUrl = (id: string) =>
+    `${process.env.NEXT_PUBLIC_IMAGE_SERVER}/image/${id}?resize=400`;
+
+  const getFullUrl = (id: string) =>
+    `${process.env.NEXT_PUBLIC_IMAGE_SERVER}/image/${id}?resize=2000`;
+
+  /* ===================== FETCH IMAGES ===================== */
+
   useEffect(() => {
-    async function fetchImages() {
-      if (!params.id) return;
+    if (!params.id) return;
 
+    const controller = new AbortController();
+
+    async function fetchImages() {
       try {
         setLoading(true);
-        const res = await fetch(tag && tag.length >= 1 ? `${process.env.NEXT_PUBLIC_IMAGE_SERVER}/tagsearch?proj_id=${params.id}&tags=${tagString}&strict=${strict} `: `${process.env.NEXT_PUBLIC_IMAGE_SERVER}/proj/image/${params.id}`, {
-            method: "GET",
-            cache: "no-store",
-            signal: AbortSignal.timeout(2000),
+
+        const endpoint =
+          tags.length > 0
+            ? `${process.env.NEXT_PUBLIC_IMAGE_SERVER}/tagsearch?proj_id=${params.id}&tags=${tagString}&strict=${strict}`
+            : `${process.env.NEXT_PUBLIC_IMAGE_SERVER}/proj/image/${params.id}`;
+
+        const res = await fetch(endpoint, {
+          method: "GET",
+          cache: "no-store",
+          signal: controller.signal,
         });
 
         if (!res.ok) throw new Error(`Failed: ${res.status}`);
-        
+
         const data: string[] = await res.json();
         setImageIds(data);
-      } catch (err : any) {
-        if (err.name === 'TimeoutError') { // Note: It throws 'TimeoutError', not 'AbortError'
-          route.push(`${process.env.NEXT_PUBLIC_HOST}/projs/${params.id}?${(tagString ? "tag=" + tagString : "") + (strict ? "together=" + strict : "")}`)
-        }
-        console.error("Error fetching project images:", err);
+      } catch (err) {
+        console.error("Image fetch error:", err);
         setImageIds([]);
       } finally {
         setLoading(false);
@@ -64,174 +88,265 @@ export default function SimpleGallery() {
     }
 
     fetchImages();
-  }, [params.id , tagString]); 
+    return () => controller.abort();
+  }, [params.id, tagString, strict]);
 
-  // Handle Selection
+  /* ===================== SELECTION ===================== */
+
   const handleImageClick = (e: React.MouseEvent, index: number) => {
-    if (e.shiftKey) {
-      if (lastSelectedIndex == null) {
-        setLastSelectedIndex(index);
-        setSelectedIndices([index]);
-      } else {
-        const start = Math.min(lastSelectedIndex, index);
-        const end = Math.max(lastSelectedIndex, index);
-        const range = Array.from({ length: end - start + 1 }).map((_, i) => start + i);
-        setSelectedIndices((prev) =>
-          prev ? [...prev, ...range.filter((val) => !prev.includes(val))] : range
-        );
-      }
-    } else if (e.ctrlKey) {
-      setLastSelectedIndex(index);
-      setSelectedIndices((prev) =>
-        prev?.includes(index) ? prev.filter((i) => i !== index) : prev && [...prev, index]
+    e.stopPropagation();
+
+    if (e.shiftKey && lastSelectedIndex !== null) {
+      const start = Math.min(lastSelectedIndex, index);
+      const end = Math.max(lastSelectedIndex, index);
+      const range = Array.from(
+        { length: end - start + 1 },
+        (_, i) => start + i
       );
-    } else {
-      setCurrentIndex(index);
+
+      setSelectedIndices((prev) =>
+        Array.from(new Set([...prev, ...range]))
+      );
+      return;
     }
+
+    if (e.ctrlKey) {
+      setSelectedIndices((prev) =>
+        prev.includes(index)
+          ? prev.filter((i) => i !== index)
+          : [...prev, index]
+      );
+      setLastSelectedIndex(index);
+      return;
+    }
+
+    setCurrentIndex(index);
   };
 
-  // Download Logic
-  const handleDownload = () => {
-    if (!imageIds) return;
-    const targetIndices = selectedIndices && selectedIndices.length > 0 
-      ? selectedIndices 
+  /* ===================== DOWNLOAD ===================== */
+
+const handleDownload = async () => {
+  const targets =
+    selectedIndices.length > 0
+      ? selectedIndices
       : imageIds.map((_, i) => i);
 
-    targetIndices.forEach((index) => {
-        const id = imageIds[index];
-        if (id) {
-            window.open(getImageUrl(id), "_blank");
-        }
-    });
+  const selectedIds = targets
+    .map((index) => imageIds[index])
+    .filter(Boolean);
+
+  if (selectedIds.length === 0) return;
+
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_IMAGE_SERVER}/images/zip`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          image_ids: selectedIds,
+        }),
+      }
+    );
+
+    if (!res.ok) throw new Error("Zip download failed");
+
+    const blob = await res.blob();
+
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download =
+      selectedIds.length === imageIds.length
+        ? "all_images.zip"
+        : `selected_${selectedIds.length}.zip`;
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    window.URL.revokeObjectURL(url);
+  } catch (err) {
+    console.error("Download error:", err);
+  }
+};
+
+  const downloadSingle = (id: string) => {
+    // We use the dl=1 flag we set up in your Go server
+    const url = `${process.env.NEXT_PUBLIC_IMAGE_SERVER}/image/${id}?dl=1`;
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `${id}.jpg`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
-  // Modal Navigation
+  /* ===================== MODAL NAVIGATION ===================== */
+
   const closeModal = useCallback(() => setCurrentIndex(null), []);
+
   const goLeft = useCallback(() => {
-    setCurrentIndex((prev) => (prev !== null && prev > 0 ? prev - 1 : prev));
+    setCurrentIndex((prev) =>
+      prev !== null && prev > 0 ? prev - 1 : prev
+    );
   }, []);
+
   const goRight = useCallback(() => {
     setCurrentIndex((prev) =>
-      prev !== null && imageIds && prev < imageIds.length - 1 ? prev + 1 : prev
+      prev !== null && prev < imageIds.length - 1
+        ? prev + 1
+        : prev
     );
-  }, [imageIds]);
+  }, [imageIds.length]);
 
   useEffect(() => {
-    const handleEsc = (e: KeyboardEvent) => {
+    const handleKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") closeModal();
-      if (e.key === "ArrowRight") goRight();
       if (e.key === "ArrowLeft") goLeft();
+      if (e.key === "ArrowRight") goRight();
     };
-    window.addEventListener("keydown", handleEsc);
-    return () => window.removeEventListener("keydown", handleEsc);
+
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
   }, [closeModal, goLeft, goRight]);
 
+  /* ===================== RENDER ===================== */
+
   return (
-    <div className="flex flex-col p-2 h-full w-full min-h-screen" onClick={() => { setSelectedIndices(null); setLastSelectedIndex(null); }}>
-      
-      {/* --- Top Bar --- */}
+    <div
+      className="flex flex-col min-h-screen w-full p-2"
+      onClick={() => {
+        setSelectedIndices([]);
+        setLastSelectedIndex(null);
+      }}
+    >
+      {/* ---------------- TOP BAR ---------------- */}
       <div className="fixed top-0 left-0 w-full h-[80px] z-40 px-6 flex items-center justify-between backdrop-blur-md bg-black/20">
-        <button 
-            onClick={() => route.push("/projs")}
-            className="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition flex items-center gap-2"
+
+        <button
+          onClick={() => router.push("/projs")}
+          className="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-700 flex items-center gap-2"
         >
           <ArrowLeft size={18} /> Back
         </button>
-        <div className="absolute flex-col z-10 w-[55%] left-1/2 -translate-x-1/2 p-1 top-7 ">
-              {isFaceSelectOpen && <div className=" relative w-fit h-fit">
-                  <div className="absolute inset-0 flex flex-col backdrop-blur-3xl rounded-4xl bg-gray-800/40"/>
-                  <FaceSelect id={params.id} driveId={driveId || ""} imgList={undefined} tagParent={undefined}/>
-              </div>}
-              <div className="absolute left-1/2 w-1/2 max-sm:left-[10%] -translate-x-1/2">
-                  <button className="btn btn-block"  onClickCapture={() => setIsFaceSelectOpen(prev => !prev)}>{isFaceSelectOpen ? <ArrowUpFromLine/> : <SearchIcon/>}</button>
-              </div>
-          </div>
 
-        <div 
-            className="flex items-center gap-3 cursor-pointer bg-gray-800 px-4 py-2 rounded-2xl hover:bg-gray-700 transition select-none"
-            onClick={(e) => {
-                e.stopPropagation();
-                handleDownload();
-            }}
+        <div className="flex items-center gap-3 bg-gray-800 px-4 py-2 rounded-2xl hover:bg-gray-700 cursor-pointer"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleDownload();
+          }}
         >
-            <DownloadIcon size={20} className="text-white"/>
-            <span className="text-white font-mono">
-                {selectedIndices ? `${selectedIndices.length} Selected` : "Download All"}
-            </span>
+          <DownloadIcon size={20} className="text-white" />
+          <span className="text-white font-mono">
+            {selectedIndices.length > 0
+              ? `${selectedIndices.length} Selected`
+              : "Download All"}
+          </span>
         </div>
       </div>
 
-      {/* --- Image Grid --- */}
-      <div className="flex flex-row flex-wrap gap-4 mt-[100px] justify-center px-4 pb-10">
-        {loading && Array.from({ length: 10 }).map((_, i) => (
-            <div key={i} className="w-[300px] h-[300px] bg-gray-800 animate-pulse rounded-lg"/>
-        ))}
+      {/* ---------------- GRID ---------------- */}
+      <div className="flex flex-wrap gap-4 mt-[100px] justify-center px-4 pb-10">
 
-        {!loading && imageIds && imageIds.map((id, index) => (
+        {loading &&
+          Array.from({ length: 8 }).map((_, i) => (
             <div
-              key={id}
-              className="relative group hover:scale-105 transition-transform duration-200"
-            >
+              key={i}
+              className="w-[300px] h-[300px] bg-gray-800 animate-pulse rounded-lg"
+            />
+          ))}
+
+        {!loading &&
+          imageIds.map((id, index) => (
+            <div key={id} className="relative group">
+
               <Image
-                src={getImageUrl(id)}
+                src={getThumbUrl(id)}
                 alt=""
                 width={300}
                 height={300}
-                className={`rounded-lg object-cover cursor-pointer border-2 w-[300px] h-[300px] bg-gray-900
-                    ${selectedIndices?.includes(index) ? "border-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.5)]" : "border-transparent"}
-                `}
-                onClick={(e) => {
-                    e.stopPropagation();
-                    handleImageClick(e, index);
-                }}
                 unoptimized
+                className={`w-[300px] h-[300px] object-cover rounded-lg cursor-pointer border-2
+                ${
+                  selectedIndices.includes(index)
+                    ? "border-blue-500 shadow-lg"
+                    : "border-transparent"
+                }`}
+                onClick={(e) => handleImageClick(e, index)}
               />
-              {selectedIndices?.includes(index) && (
-                <div className="absolute top-2 left-2 text-blue-500 bg-white rounded-full p-0.5 shadow-md">
+
+              {selectedIndices.includes(index) && (
+                <div className="absolute top-2 left-2 text-blue-500 bg-white rounded-full p-1">
                   <CheckCircle2 size={20} />
                 </div>
               )}
             </div>
           ))}
 
-          {!loading && imageIds && imageIds.length === 0 && (
-             <div className="text-gray-400 text-xl mt-20">No images found in this project.</div>
-          )}
+        {!loading && imageIds.length === 0 && (
+          <div className="text-gray-400 text-xl mt-20">
+            No images found.
+          </div>
+        )}
       </div>
 
-      {/* --- Fullscreen Modal with OpenSeadragon --- */}
-      {currentIndex !== null && imageIds && imageIds[currentIndex] && (
+      {/* ---------------- MODAL ---------------- */}
+      {currentIndex !== null && imageIds[currentIndex] && (
         <div
           className="fixed inset-0 bg-black/95 flex items-center justify-center z-50"
           onClick={closeModal}
         >
-          {/* Prevent click propagation on the viewer container */}
-          <div className="relative w-full h-full p-0 md:p-4 flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
-            
-            {/* Close Button */}
-            <button className="absolute top-6 left-6 text-white text-4xl hover:text-gray-300 z-[70] p-2 bg-black/20 rounded-full" onClick={closeModal}>✕</button>
+          <div
+            className="relative w-full h-full max-w-[95vw] max-h-[90vh]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close */}
+            {/* --- TOP CONTROLS (Close and Download) --- */}
+      <div className="absolute top-6 left-0 w-full px-6 flex justify-between items-center z-50">
+        <button
+          className="text-white bg-black/40 hover:bg-black/60 p-2 rounded-full backdrop-blur-md transition-all"
+          onClick={closeModal}
+        >
+          <ArrowLeft size={24} />
+        </button>
 
-            {/* Download Button */}
-            <button 
-                className="absolute top-6 right-6 text-white bg-gray-800 p-3 rounded-full hover:bg-gray-700 z-[70]"
-                onClick={() => window.open(`/api/download?id=${(imageIds[currentIndex])}`, "_blank")}
-            >
-                <Download />
-            </button>
-
-            {/* Navigation Arrows (Outside the viewer or overlaying edges) */}
+        {/* NEW DOWNLOAD BUTTON */}
+        <button
+          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-5 py-2 rounded-xl backdrop-blur-md shadow-lg transition-all"
+          onClick={() => downloadSingle(imageIds[currentIndex])}
+        >
+          <Download size={20} />
+          <span className="hidden sm:inline">Download</span>
+        </button>
+      </div>
+            {/* Nav */}
             {currentIndex > 0 && (
-                <button className="absolute left-4 text-white text-6xl hover:scale-110 transition z-[70] p-4 drop-shadow-lg" onClick={goLeft}>◀</button>
+              <button
+                className="absolute left-6 top-1/2 text-white text-5xl z-50"
+                onClick={goLeft}
+              >
+                ◀
+              </button>
             )}
+
             {currentIndex < imageIds.length - 1 && (
-                <button className="absolute right-4 text-white text-6xl hover:scale-110 transition z-[70] p-4 drop-shadow-lg" onClick={goRight}>▶</button>
+              <button
+                className="absolute right-6 top-1/2 text-white text-5xl z-50"
+                onClick={goRight}
+              >
+                ▶
+              </button>
             )}
 
-            {/* REPLACED NEXT/IMAGE WITH MODERN VIEWER */}
-            <div className="relative w-full h-full max-w-[95vw] max-h-[90vh] bg-black shadow-2xl rounded-lg overflow-hidden border border-gray-800">
-                <ModernViewer imageUrl={getImageFullUrl(imageIds[currentIndex])} />
+            {/* OpenSeadragon Viewer */}
+            <div className="w-full h-full rounded-lg overflow-hidden border border-gray-800">
+              <ModernViewer
+                imageUrl={getFullUrl(imageIds[currentIndex])}
+              />
             </div>
-
           </div>
         </div>
       )}
