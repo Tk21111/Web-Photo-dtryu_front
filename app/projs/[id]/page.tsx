@@ -41,7 +41,7 @@ export default function ProjsChild() {
     const [selcetdImage, setSelectedImage] = useState<number[] | null>(null);
     const [lastSelectedIndex, setLastSelectedIndex] = useState<number | null>(null);
 
-    const [driveIdRedirect , setDriveIdRedirect] = useState<string | null>(null);
+    const [ , setDriveIdRedirect] = useState<string | null>(null);
 
     const route = useRouter();
 

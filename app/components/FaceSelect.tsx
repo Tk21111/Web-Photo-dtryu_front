@@ -1,6 +1,5 @@
 "use client"
 import { CheckCircle2, SearchCheck } from "lucide-react";
-import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
@@ -11,7 +10,6 @@ const FaceSelect = ({id , driveId , imgList , tagParent} : {id : string  | undef
   const [lastSelectedIndex , setLastSelectedIndex] = useState<number | null>(null);
 
   const faceSelectRef = useRef<HTMLDivElement | null>(null);
-  const {data : session } = useSession();
 
   //read param
   const searchParams = useSearchParams();

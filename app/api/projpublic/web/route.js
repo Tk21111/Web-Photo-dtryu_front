@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
 import serviceAccSelector from "../../../utils/serviceAccSelector";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/lib/auth";
 import Drive from "../../../model/Drive"
 
 

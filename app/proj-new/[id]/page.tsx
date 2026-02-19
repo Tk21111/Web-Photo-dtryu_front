@@ -1,19 +1,11 @@
 "use client";
 
-import {
-  CheckCircle2,
-  Download,
-  DownloadIcon,
-  ArrowLeft,
-  ArrowUpFromLine,
-  SearchIcon,
-} from "lucide-react";
 
 import Image from "next/image";
 import dynamic from "next/dynamic";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import React, { useCallback, useEffect, useState } from "react";
-import FaceSelect from "@/app/components/FaceSelect";
+import { ArrowLeft, CheckCircle2, Download, DownloadIcon } from "lucide-react";
 
 /* -------------------- SAFE DYNAMIC IMPORT -------------------- */
 const ModernViewer = dynamic(
@@ -30,7 +22,6 @@ export default function SimpleGallery() {
 
   const tagString = searchParams.get("tag");
   const strict = searchParams.get("strict");
-  const driveId = searchParams.get("driveId");
 
   const tags = tagString?.split(",") ?? [];
 
@@ -42,8 +33,6 @@ export default function SimpleGallery() {
   const [lastSelectedIndex, setLastSelectedIndex] = useState<number | null>(
     null
   );
-
-  const [isFaceSelectOpen, setIsFaceSelectOpen] = useState(false);
 
   /* ===================== URL HELPERS ===================== */
 

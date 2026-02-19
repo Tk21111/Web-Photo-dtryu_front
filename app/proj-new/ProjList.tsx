@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowDownFromLine, ArrowUpFromLine } from "lucide-react";
 import List from "./List";
 import { Proj } from "../config";
@@ -30,6 +30,7 @@ export default function ProjNewList() {
       setProjs(data);
       setError(null);
     } catch (err) {
+      console.error(err)
       setError("Error fetching projects. Please try again later.");
     }
   };
