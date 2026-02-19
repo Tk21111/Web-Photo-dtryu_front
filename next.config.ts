@@ -25,6 +25,13 @@ const nextConfig: NextConfig = {
         pathname: '**',
         search: '',
       },
+      {
+        protocol: 'https',
+        hostname: 'https://meow.printhelloworld.xyz',
+        port: '',
+        pathname: '**',
+        search: '',
+      },
     ],
   }
 };
